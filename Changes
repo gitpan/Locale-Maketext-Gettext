@@ -1,5 +1,9 @@
 Locale-Maketext-Gettext change log
 
+2003-04-25	version 0.04
+	Documentation fixes.  Upgrade is not required if you are
+	using version 0.03.
+
 2003-04-25	version 0.03
 	Bug fixes.
 	 1. Fixed clashing of the die_for_lookup_failures setting

@@ -1,4 +1,4 @@
-# Locale::Maketext::Gettext - bridge Maketext to gettext
+# Locale::Maketext::Gettext - Joins the gettext and Maketext frameworks
 
 # Copyright (c) 2003 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.03;
+$VERSION = 0.04;
 @EXPORT = qw(readmo);
 @EXPORT_OK = @EXPORT;
 
@@ -308,7 +308,7 @@ __END__
 
 =head1 NAME
 
-Locale::Maketext::Gettext - bridge Maketext to gettext
+Locale::Maketext::Gettext - Joins the gettext and Maketext frameworks
 
 =head1 SYNOPSIS
 
@@ -342,10 +342,11 @@ Use Locale::Maketext::Gettext to read and parse the MO file:
 
 =head1 DESCRIPTION
 
-Locale::Maketext::Gettext brings GNU gettext and Maketext together.
-It is a subclass of L<Locale::Maketext(3)|Locale::Maketext/3> that
-follows the way GNU gettext works.  It works seamlessly, I<both in
-the sense of GNU gettext and Maketext>.
+Locale::Maketext::Gettext joins the GNU gettext and Maketext
+frameworks.  It is a subclass of L<Locale::Maketext(3)|Locale::Maketext/3>
+that follows the way GNU gettext works.  It works seamlessly, I<both
+in the sense of GNU gettext and Maketext>.  As a result, you I<enjoy
+both their advantages, and get rid of both their problems, too.>
 
 You start as an usual GNU gettext localization project:  Work on
 PO files with the help of translators, reviewers and Emacs.  Turn
@@ -365,8 +366,8 @@ Locale::Maketext::Gettext.  That's all. ^_*'
 
 Register a text domain with a locale directory.  It is only a
 registration.  Nothing really happens here.  No check is ever made
-whether this C<LOCALEDIR> exists, nor if C<DOMAIN> really sit in this
-C<LOCALEDIR>.  Returns C<LOCALEDIR> itself.  If C<LOCALEDIR> is
+whether this C<LOCALEDIR> exists, nor if C<DOMAIN> really sits in
+this C<LOCALEDIR>.  Returns C<LOCALEDIR> itself.  If C<LOCALEDIR> is
 omitted, the registered locale directory of C<DOMAIN> is returned.
 If C<DOMAIN> is not even registered yet, returns C<undef>.  This
 method always success.
@@ -384,7 +385,7 @@ success.
 
 =item $LH->language_tag
 
-Retrieve the output encoding.  This is the same method in
+Retrieve the language tag.  This is the same method in
 L<Locale::Maketext(3)|Locale::Maketext/3>.  It is readonly.
 
 =item $LH->encoding(ENCODING)
@@ -395,8 +396,8 @@ in your localization subclasses, as contract to the current
 practice of L<Locale::Maketext(3)|Locale::Maketext/3>.
 
 B<WARNING:>  You should always trust the encoding in the gettext
-MO file.  GNU gettext C<msgfmt> will check the illegal characters for
-you when you compile your MO file from your PO file.  If you try to
+MO file.  GNU gettext C<msgfmt> checks the illegal characters for you
+when you compile your MO file from your PO file.  If you try to
 output to an wrong encoding, C<maketext> will C<die> for illegal
 characters in your text.  For example, try to turn Chinese text into
 US-ASCII.  If you DO need to output to a different encoding, use the
@@ -430,7 +431,7 @@ C<undef>.
 
 Maketext dies for lookup failures, but GNU gettext never fails.
 By default Lexicon::Maketext::Gettext follows the GNU gettext
-behavior.  But if you are old-styled, or if you want a better
+behavior.  But if you are Maketext-styled, or if you want a better
 control over the failures, set this to 1.  Returns the current
 setting.
 
@@ -439,9 +440,9 @@ setting.
 Purge the MO text cache.  It purges the MO text cache from the base
 class Locale::Maketext::Gettext.  The next time C<maketext> is
 called, the MO file will be read and parse from the disk again.  This
-is used whenever your MO file is updated, but you cannot shutdown and
-restart the application.  For example, you are a co-hoster on a
-mod_perl-enabled Apache, or your mod_perl-enabled Apache is too
+is used when your MO file is updated, but you cannot shutdown and
+restart the application.  For example, when you are a co-hoster on a
+mod_perl-enabled Apache, or when your mod_perl-enabled Apache is too
 vital to be restarted for every update of your MO file, or if you
 are running a vital daemon, such as an X display server.
 
@@ -453,7 +454,7 @@ are running a vital daemon, such as an X display server.
 
 =item ($encoding, %Lexicon) = readmo($MOfile);
 
-Read and parse the MO file and return a suggested default encoding
+Read and parse the MO file, and return a suggested default encoding
 and %Lexicon.  The suggested encoding is the encoding of the MO file
 itself.  This subroutine is called by the C<textdomain> method to
 retrieve the current %Lexicon.  The result is cached, to reduce the
@@ -462,7 +463,10 @@ where C<textdomain> asks for %Lexicon for each request.  This is
 the same way GNU gettext works.  If you DO need to re-read the
 modified MO file, call the C<reload_text> method above.
 
-C<readmo()> is exported by default.
+C<readmo()> is exported by default, but you need to C<use
+Locale::Maketext::Gettext> in order to use it.  It is not exported
+from your localization class, but from the Locale::Maketext::Gettext
+package.
 
 =back
 
@@ -476,28 +480,31 @@ not stay in the current text domain.
 
 An essential benefit of this Locale::Maketext::Gettext over the
 original L<Locale::Maketext(3)|Locale::Maketext/3> is that: 
-I<GNU gettext is multibyte safe,> but perl code is not.  GNU gettext
-is safe to Big5 characters like \xa5\x5c (Gong1).  You always have to
-escape bytes like \x5c, \x40, \x5b, etc, and your non-technical
-translators and reviewers will be presented with a mess, the
-so-called "Luan4Ma3".  Sorry to say this, but it is, in fact, weird
-for a localization framework to be not multibyte-safe.  But, well,
-here comes Locale::Maketext::Gettext to rescue.  With
-Locale::Maketext::Gettext, you can sit back and leave all these mess
-to the excellent GNU gettext from now on. ^_*'
+I<GNU gettext is multibyte safe,> but perl source is not.  GNU
+gettext is safe to Big5 characters like \xa5\x5c (Gong1).  But if you
+follow the current L<Locale::Maketext(3)|Locale::Maketext/3> document
+and put your lexicon as a hash in a localization subclass, you have
+to escape bytes like \x5c, \x40, \x5b, etc., in the middle of some
+natural multibyte characters.  This breaks these characters in
+halves.  Your non-technical translators and reviewers will be
+presented with unreadable mess, "Luan4Ma3".  Sorry to say this, but
+it is weird for a localization framework to be not multibyte-safe.
+But, well, here comes Locale::Maketext::Gettext to rescue.  With
+Locale::Maketext::Gettext, you can sit back and relax now, leaving
+all this mess to the excellent GNU gettext framework. ^_*'
 
 The idea of Locale::Maketext::Getttext came from
 L<Locale::Maketext::Lexicon(3)|Locale::Maketext::Lexicon/3>, a great
 work by autrijus.  But it is simply not finished yet and not
-practically usable.  So I decide to write a replacement.
+practically usable.  I was first trying to write a wrapper to fix it,
+but finally I decide to make a replacement.
 
 The part of calling F<msgunfmt> is removed.  The gettext MO file
 format is officially documented, so I decided to parse it by myself.
 It is not hard.  It reduces the overhead to raising a subshell.  It
-benefits from the fact that reading and parsing MO binary files is
-much faster then PO text files, since regular expression is not
-involved.  Also, after all, F<msgunfmt> is not portable on non-GNU
-systems.
+benefits from the fact that parsing binary files is much faster then
+parsing text files, since regular expressions are not involved.
+Also, after all, F<msgunfmt> is not portable on non-GNU systems.
 
 Locale::Maketext::Gettext also solved the problem of lack of the
 ability to handle the encoding in
@@ -519,7 +526,8 @@ the current design of Locale::Maketext::Gettext.  Besides, it's
 meaningless.  Locale::Maketext is object-oriented.  You can always
 raise a new language handle for another text domain.  This is
 different from the situation of GNU gettext.  Also, the category
-is always C<LC_MESSAGES>.  It's meaningless to change it.
+is always C<LC_MESSAGES>.  Of course it is.  We are gettext and
+Maketext. ^_*'
 
 Avoid creating different language handles with different
 textdomain on the same localization subclass.  This currently
@@ -541,6 +549,9 @@ a single textdomain for a single localization class.
 All the problems I have noticed have been fixed.  You are welcome
 to submit new ones. ^_*'  Maybe a long-winded docmuentation is a
 bug, too. :p
+
+Please help me fix my English.  I tries to do my best to this
+documentation.  But, after all, I'm not a native English speaker. ^^;
 
 =head1 SEE ALSO
 
