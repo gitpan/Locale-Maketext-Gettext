@@ -1,17 +1,27 @@
 Locale-Maketext-Gettext change log
 
+2003-05-07	version 1.08
+	Fixes mistakes from version 1.07
+	 1. Return the interpreter line to the maketext script.  It
+	    was a misunderstanding at 1.07
+	 2. Content-Transfer-Encoding is fixed from 8bit to 7bit
+	    in the English MO files.
+	 3. t/test_native.po: Added.
+	 3. 02-big-endian.t: Test suite for native-built MO files
+	    are added.  Please report your failures.
+
 2003-05-05	version 1.07
 	Bug fixes.
 	 1. Fix to the interpreter line in the maketext script so
 	    that it can be replaced with correct interpreter at
 	    make time.
-	 2. 11-command-line.t:  script location changed from
+	 2. 11-command-line.t: script location changed from
 	    lib/maketext to blib/script/maketext.
 	 3. C locale is added to the test suite.
-	 4. 11-command-line.t:  Locales en, zh_TW, zh_CN are remove
+	 4. 11-command-line.t: Locales en, zh_TW, zh_CN are remove
 	    from the test suite, to avoid perl warnings from
 	    systems that did not install these locales.
-	 5. 11-command-line.t:  $ENV{"LANGUAGE"} controls added.
+	 5. 11-command-line.t: $ENV{"LANGUAGE"} controls added.
 
 2003-05-04	version 1.06
 	 1. Language function override is not available for
@@ -44,7 +54,7 @@ Locale-Maketext-Gettext change log
 	 1. Support for MO files without encoding specified was
 	    added.  I don't know there are MO files born without
 	    its encoding. ^^;
-	 2. L::M::G::F:  textdomain now works for default system
+	 2. L::M::G::F: textdomain now works for default system
 	    locale directories, too.  For domains that are not
 	    binded with bindtextdomain, it searches the system
 	    locale directories to find the domain MO files.
@@ -54,14 +64,14 @@ Locale-Maketext-Gettext change log
 	    added.  It may be skipped, though.
 
 2003-05-02	version 1.03
-	 1. L::M::G:  A algorism bug about key_encoding with
+	 1. L::M::G: A algorism bug about key_encoding with
 	    auto-lexicon was fixed.
-	 2. L::M::G::F:  I decide to give up mod_perl safety for
+	 2. L::M::G::F: I decide to give up mod_perl safety for
 	    encoding, key_encoding, encode_failure and
 	    die_for_lookup_failures.  POSIX::setlocale didn't
 	    solve this problem, either.  Use L::M::G if you need
 	    that.  Suggestions and solutions are welcome.
-	 3. L::M::G:  FLH (Failure language handler) is added to
+	 3. L::M::G: FLH (Failure language handler) is added to
 	    help switching the die_for_lookup_failures setting.
 	    Maketext can be slightly faster.
 
@@ -88,16 +98,16 @@ Locale-Maketext-Gettext change log
 	    dropped in time, in order to reduce memory used.
 
 2003-04-30
-	 1. L::M::G::F:  I forgot to document dmaketext, too. ^^;
+	 1. L::M::G::F: I forgot to document dmaketext, too. ^^;
 	    But, no, I will not put a third release today!
-	 2. L::M::G::F:  Fixes to documentation typos.
+	 2. L::M::G::F: Fixes to documentation typos.
 	 3. maketext() and __() are exchanged.  maketext() is a
             wrapper to __() now.  The speed of __() should be
 	    slightly faster.
 
 2003-04-30	version 1.02
 	Documentation fixes.
-	 1. L::M::G::F:  Documentation fixes.  get_handle was
+	 1. L::M::G::F: Documentation fixes.  get_handle was
 	    not included in the documentation. ^^;  I forgot to
 	    put it in.
 	 2. README was updated.  L::M::G::F is included in the
@@ -106,21 +116,21 @@ Locale-Maketext-Gettext change log
 
 2003-04-30	version 1.01
 	Improvements to Locale::Maketext::Gettext::Functions.
-	 1. L::M::G::F:  Documentation fixes.  Lots of errors sit
+	 1. L::M::G::F: Documentation fixes.  Lots of errors sit
 	    there in the previous documentation.  It's impossible
 	    to work if you follow the previous documentation. ^^;
 	    Ha ha...
-	 2. L::M::G:  Map the language i-default to the locale C.
-	 3. L::M::G::F:  Map the locale C to the language i-default.
+	 2. L::M::G: Map the language i-default to the locale C.
+	 3. L::M::G::F: Map the locale C to the language i-default.
 	 4. fork_and_test is added to the test suite to test without
 	    polluting the package space.  It is slow, though. ^^;
-	 5. L::M::G::F:  Several test suites are added.
-	 6. L::M::G::F:  Error tolerance is largely improved.
-	 7. L::M::G:  New method subclass_init is added.  Object
+	 5. L::M::G::F: Several test suites are added.
+	 6. L::M::G::F: Error tolerance is largely improved.
+	 7. L::M::G: New method subclass_init is added.  Object
 	    initialization is moved from the new method to the
 	    subclass_init method, so that another subclass may
 	    inherit it further.
-	 8. L::M::G::F:  The "experimental" warning is removed.
+	 8. L::M::G::F: The "experimental" warning is removed.
 	    Large amount of errors can be handled gracefully now.
 
 2003-04-28

@@ -55,7 +55,7 @@ Last-Translator: imacat <imacat\@mail.imacat.idv.tw>
 Language-Team: English <imacat\@mail.imacat.idv.tw>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Plural-Forms: nplurals=2; plural=n != 1;
 EOT
 eval {

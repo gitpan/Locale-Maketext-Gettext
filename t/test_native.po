@@ -1,0 +1,20 @@
+# English PO file for the test_native project.
+# Copyright (C) 2003 imacat
+# This file is distributed under the same license as the commonlib package.
+# imacat <imacat@mail.imacat.idv.tw>, 2003.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: test_native 1.0\n"
+"POT-Creation-Date: 2003-04-24 21:52+0800\n"
+"PO-Revision-Date: 2003-04-24 21:52+0800\n"
+"Last-Translator: imacat <imacat@mail.imacat.idv.tw>\n"
+"Language-Team: English <imacat@mail.imacat.idv.tw>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=US-ASCII\n"
+"Content-Transfer-Encoding: 7bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: test_native.pl:100
+msgid "Hello, world!"
+msgstr "Hiya :)"

@@ -9,15 +9,17 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 6 }
+BEGIN { plan tests => 8 }
 
 use FindBin;
-use File::Spec::Functions qw(catdir);
+use File::Spec::Functions qw(catdir catfile);
 use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # Check reading big-endian PO files
+use vars qw($skip $MSGFMT $POfile $MOfile);
+$MSGFMT = "/usr/bin/msgfmt";
 # English
 eval {
     require T_L10N;
@@ -56,3 +58,30 @@ eval {
 ok($@, "");
 # 6
 ok($_, "´ó¼ÒºÃ¡£");
+
+# Native-built MO file
+{
+$skip = 1;
+last unless -x $MSGFMT;
+$_ = join "", `$MSGFMT --version 2>&1`;
+last unless /GNU gettext/;
+$POfile = catfile($FindBin::Bin, "test_native.po");
+$MOfile = catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_native.mo");
+`$MSGFMT -o $MOfile $POfile`;
+last unless $? == 0;
+$skip = 0;
+eval {
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
+    $_->bindtextdomain("test_native", $LOCALEDIR);
+    $_->textdomain("test_native");
+    $_ = $_->maketext("Hello, world!");
+};
+}
+# 7
+skip($skip, $@, "");
+# 8
+skip($skip, $_, "Hiya :)");
+
+# Garbage collection
+unlink catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_native.mo");

@@ -1,4 +1,4 @@
-#! ./perl -w
+#! /usr/bin/perl -w
 # Command-line interface to Locale::Maketext::Gettext (and Locale::Maketext)
 
 # Copyright (c) 2003 imacat. All rights reserved. This program is free
@@ -12,7 +12,7 @@ use warnings;
 use Locale::Maketext::Gettext::Functions;
 use Getopt::Long qw(GetOptions);
 use vars qw($VERSION);
-$VERSION = 0.02;
+$VERSION = 0.03;
 
 use vars qw($THIS_FILE $SHORTHELP $VERSTR $SEARCH $HELP);
 $THIS_FILE = $0;
