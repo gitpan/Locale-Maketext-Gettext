@@ -1,5 +1,11 @@
 Locale-Maketext-Gettext change log
 
+2003-05-07	version 1.07
+	Test suite fix.
+	 1. 02-big-endian.t: Fix on $MSGFMT so that it works on
+	    more platforms.
+	
+
 2003-05-07	version 1.08
 	Fixes mistakes from version 1.07
 	 1. Return the interpreter line to the maketext script.  It
@@ -7,7 +13,7 @@ Locale-Maketext-Gettext change log
 	 2. Content-Transfer-Encoding is fixed from 8bit to 7bit
 	    in the English MO files.
 	 3. t/test_native.po: Added.
-	 3. 02-big-endian.t: Test suite for native-built MO files
+	 4. 02-big-endian.t: Test suite for native-built MO files
 	    are added.  Please report your failures.
 
 2003-05-05	version 1.07

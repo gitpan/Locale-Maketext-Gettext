@@ -18,8 +18,7 @@ use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # Check reading big-endian PO files
-use vars qw($skip $MSGFMT $POfile $MOfile);
-$MSGFMT = "/usr/bin/msgfmt";
+use vars qw($skip $POfile $MOfile);
 # English
 eval {
     require T_L10N;
@@ -62,12 +61,12 @@ ok($_, "´ó¼ÒºÃ¡£");
 # Native-built MO file
 {
 $skip = 1;
-last unless -x $MSGFMT;
-$_ = join "", `$MSGFMT --version 2>&1`;
+$_ = join "", `msgfmt --version 2>&1`;
+last unless $? == 0;
 last unless /GNU gettext/;
 $POfile = catfile($FindBin::Bin, "test_native.po");
 $MOfile = catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_native.mo");
-`$MSGFMT -o $MOfile $POfile`;
+`msgfmt -o $MOfile $POfile`;
 last unless $? == 0;
 $skip = 0;
 eval {
