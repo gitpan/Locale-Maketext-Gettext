@@ -228,12 +228,14 @@ undef $domain;
 foreach $dir (@Locale::Maketext::Gettext::Functions::SYSTEM_LOCALEDIRS) {
     next unless -d $dir;
     @_ = glob "$dir/*/LC_MESSAGES/*.mo";
+    @_ = grep /\/[^\/\.]+\/LC_MESSAGES\//, @_;
     next if scalar(@_) == 0;
     $_ = $_[0];
     /^\Q$dir\E\/(.+?)\/LC_MESSAGES\/(.+?)\.mo$/;
     ($domain, $lang) = ($2, $1);
     $lang = lc $lang;
     $lang =~ s/_/-/g;
+    $lang = "i-default" if $lang eq "c";
     last;
 }
 $skip = defined $domain? 0: 1;
@@ -243,6 +245,8 @@ if (!$skip) {
         textdomain($domain);
         get_handle($lang);
         $_ = maketext("");
+        # Skip if $Lexicon{""} does not exists
+        $skip = 1 if $_ eq "";
     };
 }
 # 34

@@ -24,6 +24,15 @@ It works completely the GNU gettext way.  It plays magic to
 Locale::Maketext.  No more localization class/subclasses and language
 handles are required.
 
+* The maketext script
+
+The maketext script is a command-line interface to
+Locale::Maketext::Gettext (and Locale::Maketext).  It can be used in
+shell scripts, etc, to translate, maketext and return the
+result.  It enables Maketext to be integrated into other programming
+languages/systems, like bash/csh, python, PHP, C, etc.  It works
+like the command-line program gettext.
+
 * Installation
 
 Locale::Maketext::Gettext uses the standard perl module install process:

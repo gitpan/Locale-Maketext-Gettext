@@ -1,5 +1,17 @@
 Locale-Maketext-Gettext change log
 
+2003-05-04	version 1.06
+	 1. Language function override is not available for
+	    L::M::G::F and the maketext script.  I almost forgot
+	    this problem.  Notice is added to the documentation.
+	    Suggestions are welcome.
+
+2003-05-03	version 1.06
+	Introducing "maketext", a command line interface to
+	Locale::Maketext::Gettext (and Locale::Maketext).
+	 1. The maketext script is added, a command line interface
+	    to Locale::Maketext::Gettext (and Locale::Maketext).
+
 2003-05-03	version 1.05
 	Test suites fixes.  This fixes the failures reported from
 	CPAN testers.  Failures reported from CPAN testers are

@@ -4,6 +4,7 @@ MANIFEST			This list of files
 Makefile.PL
 README
 THANKS
+bin/maketext
 lib/Locale/Maketext/Gettext.pm
 lib/Locale/Maketext/Gettext/Functions.pm
 t/01-basic.t
@@ -16,6 +17,7 @@ t/07-f-basic.t
 t/08-f-errors.t
 t/09-f-encodings.t
 t/10-f-switching.t
+t/11-command-line.t
 t/T_L10N.pm
 t/locale/en/LC_MESSAGES/bad.mo
 t/locale/en/LC_MESSAGES/test.mo

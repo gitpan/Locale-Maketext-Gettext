@@ -7,9 +7,10 @@ WriteMakefile(
     AUTHOR		=> 'imacat <imacat@mail.imacat.idv.tw>',
     ABSTRACT		=> 'Joins gettext and Maketext frameworks',
     NAME                => 'Locale-Maketext-Gettext',
-    VERSION             => '1.05',
+    VERSION             => '1.06',
     PREREQ_PM		=> { },
     
+    EXE_FILES		=> [ "bin/maketext" ],
     dist		=> {
         COMPRESS	=> 'gzip -9',
         SUFFIX		=> '.gz',

@@ -64,7 +64,6 @@ sub key_encoding {
 sub new {
     local ($_, %_);
     my ($self, $class);
-    # Nothing fancy!
     $class = ref($_[0]) || $_[0];
     $self = bless {}, $class;
     $self->subclass_init;

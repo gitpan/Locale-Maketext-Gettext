@@ -3,7 +3,7 @@
 # Copyright (c) 2003 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
-# First written: 2003-04-23
+# First written: 2003-04-28
 
 package Locale::Maketext::Gettext::Functions;
 use 5.008;
@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.05;
+$VERSION = 0.06;
 @EXPORT = qw();
 push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
@@ -535,6 +535,12 @@ C<$Lexicon{""}>.  For example:
 
 =head1 NOTES
 
+B<NOTE:> Since localization classes are generated at run-time, it is
+not possible to override the Maketext language functions, like
+C<quant> or C<numerate>.  If that is your concern, use
+L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> instead.
+Suggestions are welcome.
+
 You can now add/remove languages/MO files at run-time.  This is a
 major improvement over the original
 L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> (and
@@ -554,8 +560,7 @@ If you set C<textdomain> to a domain that is not C<bindtextdomain> to
 specific a locale directory yet, it will try search system locale
 directories.  The current system locale directory search order is:
 /usr/share/locale, /usr/lib/locale, /usr/local/share/locale,
-/usr/local/lib/locale.  Suggestions for this search order are
-welcome.
+/usr/local/lib/locale.  Suggestions are welcome.
 
 =head1 STORY
 
@@ -616,6 +621,10 @@ imacat, 2003-04-29
 
 =head1 BUGS
 
+Since maketext localization classes are generated at run time,
+Maketext language function override, like C<quant> or C<numerate>, is
+not available here.  Suggestions are welcome.
+
 C<encoding>, C<key_encoding>, C<encode_failure> and
 C<die_for_lookup_failures> are not mod_perl-safe.  These settings
 affect the whole process, including the following scripts it is
@@ -624,11 +633,11 @@ L<POSIX(3)|POSIX/3>.  Always set them at the very beginning of your
 script if you are running under mod_perl.  If you don't like it,
 use the object-oriented
 L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> instead.
-Suggestions or solutions are welcome.
+Suggestions are welcome.
 
 Smart translation between Traditional Chinese/Simplified Chinese,
-like what GNU gettext does, is not available yet.  Suggestions or
-solutions are welcome.
+like what GNU gettext does, is not available yet.  Suggestions are
+welcome.
 
 =head1 SEE ALSO
 

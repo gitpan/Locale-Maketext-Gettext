@@ -176,14 +176,22 @@ use Locale::Maketext::Gettext;
 undef $domain;
 foreach $dir (@Locale::Maketext::Gettext::SYSTEM_LOCALEDIRS) {
     next unless -d $dir;
-    @_ = glob "$dir/zh_TW/LC_MESSAGES/*.mo";
-    @_ = glob "$dir/zh_CN/LC_MESSAGES/*.mo" if scalar(@_) == 0;
+    # Only valid in the language range of T_L10N
+    if (scalar(@_) == 0) {
+        @_ = glob "$dir/zh_TW/LC_MESSAGES/*.mo";
+        @_ = grep /\/[^\/\.]+\/LC_MESSAGES\//, @_;
+    }
+    if (scalar(@_) == 0) {
+        @_ = glob "$dir/zh_CN/LC_MESSAGES/*.mo" if scalar(@_) == 0;
+        @_ = grep /\/[^\/\.]+\/LC_MESSAGES\//, @_;
+    }
     next if scalar(@_) == 0;
     $_ = $_[0];
     /^\Q$dir\E\/(.+?)\/LC_MESSAGES\/(.+?)\.mo$/;
     ($domain, $lang) = ($2, $1);
     $lang = lc $lang;
     $lang =~ s/_/-/g;
+    $lang = "i-default" if $lang eq "c";
     last;
 }
 $skip = defined $domain? 0: 1;
@@ -193,6 +201,8 @@ if (!$skip) {
         $_ = T_L10N->get_handle($lang);
         $_->textdomain($domain);
         $_ = $_->maketext("");
+        # Skip if $Lexicon{""} does not exists
+        $skip = 1 if $_ eq "";
     };
 }
 # 24
