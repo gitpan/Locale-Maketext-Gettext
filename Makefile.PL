@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     AUTHOR		=> 'imacat (imacat@mail.imacat.idv.tw)',
-    ABSTRACT		=> 'Bridge from gettext to Locale::Maketext',
+    ABSTRACT		=> 'brings gettext and Maketext together',
     NAME                => 'Locale-Maketext-Gettext',
     VERSION_FROM        => 'lib/Locale/Maketext/Gettext.pm',
     PREREQ_PM		=> { },

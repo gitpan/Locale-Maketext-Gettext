@@ -1,0 +1,17 @@
+2003-04-26
+
+        o Release 0.02
+        o Fixed the problem with clashing class variables.  Moved most
+          class variables to instant variables.
+        o Solved the default output encoding problem by using the encoding
+          of the MO file as the default encoding.
+        o reload_text method is added to purge the MO file cache, so that
+          applications won't have to restart when their MO file updates.
+        o Byte order of the MO files is detected now, and big-endian MO
+          files support is added.
+        o die_for_lookup_failures method was added.  The default behavior
+          changes to "never fails", as GNU gettext does.
+
+2003-04-25
+
+        o Release 0.01

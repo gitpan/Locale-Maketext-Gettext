@@ -1,4 +1,23 @@
+Changes
 MANIFEST			This list of files
 Makefile.PL
 README
+THANKS
 lib/Locale/Maketext/Gettext.pm
+t/1-basic.t
+t/2-big-endian.t
+t/3-encodings.t
+t/4-racing.t
+t/5-errors.t
+t/TestPkg/L10N.pm
+t/locale/en/LC_MESSAGES/bad.mo
+t/locale/en/LC_MESSAGES/test.mo
+t/locale/en/LC_MESSAGES/test2.mo
+t/locale/en/LC_MESSAGES/test_be.mo
+t/locale/en/LC_MESSAGES/test_utf8.mo
+t/locale/zh_CN/LC_MESSAGES/test.mo
+t/locale/zh_CN/LC_MESSAGES/test_be.mo
+t/locale/zh_CN/LC_MESSAGES/test_utf8.mo
+t/locale/zh_TW/LC_MESSAGES/test.mo
+t/locale/zh_TW/LC_MESSAGES/test_be.mo
+t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
