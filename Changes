@@ -1,9 +1,37 @@
 Locale-Maketext-Gettext change log
 
+2003-04-29	version 1.01
+	Improvements to Locale::Maketext::Gettext::Functions.
+	 1. L::M::G::F:  Documentation fixes.  Lots of errors sit
+	    there in the previous documentation.  It's impossible
+	    to work if you follow the previous documentation. ^^;
+	    Ha ha...
+	 2. L::M::G:  Map the language i-default to the locale C.
+	 3. L::M::G::F:  Map the locale C to the language i-default.
+	 4. fork_and_test is added to the test suite to test without
+	    polluting the package space.  It is slow, though. ^^;
+	 5. L::M::G::F:  Several test suites are added.
+	 6. L::M::G::F:  Error tolerance is largely improved.
+	 7. L::M::G:  New method subclass_init is added.  Object
+	    initialization is moved from the new method to the
+	    subclass_init method, so that another subclass may
+	    inherit it further.
+
 2003-04-28
+	 1. TestPkg/L10N.pm is renamed as T_L10N.pm.  It is neater.
+	    a TestPkg/ subdirectory is not necessary.
+	 2. Change log is fixed.  I forgot to put the version number
+	    0.07.
+	 3. Also, the version number should become 1.00, for
+	    the joining of Locale::Maketext::Gettext::Functions. ^_*'
+
+2003-04-28	version 0.07 (1.00)
+	Introducing Locale::Maketext::Gettext::Functions, a
+	functional interface to Locale::Maketext::Gettext.
 	 1. The first Locale::Maketext::Gettext::Functions is out.
-	    It works! ^_*'  Although it cannot deal with real world
-	    problems still. ^^;
+	    It works! ^_*'  But it is still experimental.  It cannot
+	    deal with real world problems still. ^^;
+	 2. Documentation was fixed so that it is neater.
 
 2003-04-27
 	 1. The name of the _AUTO lexicon package is shorten to
@@ -24,7 +52,7 @@ Locale-Maketext-Gettext change log
 	    This saves resources when user change the
 	    die_for_lookup_failures setting.  Changing
 	    die_for_lookup_failures setting won't trigger copying and
-	    replacing whole %Lexicon anymore.  As an effect, the
+	    replacing your whole %Lexicon anymore.  As an effect, the
 	    cached compiled result of the _AUTO lexicon is preserved
 	    and the compilation overhead from Locale::Maketext is
 	    greatly reduced.

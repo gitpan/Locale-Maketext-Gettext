@@ -22,8 +22,8 @@ $LOCALEDIR = catdir($FindBin::Bin, "locale");
 # English
 # Find the default encoding
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->encoding;
@@ -36,8 +36,8 @@ ok($_, "US-ASCII");
 # Traditional Chinese
 # Find the default encoding
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->encoding;
@@ -49,8 +49,8 @@ ok($_, "Big5");
 
 # Turn to Big5
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->encoding("Big5");
@@ -63,8 +63,8 @@ ok($_, "¤j®a¦n¡C");
 
 # Turn to UTF-8
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->encoding("UTF-8");
@@ -77,8 +77,8 @@ ok($_, "å¤§å®¶å¥½ã€‚");
 
 # Turn to UTF-16LE
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->encoding("UTF-16LE");
@@ -91,8 +91,8 @@ ok($_, "'Y¶[}Y0");
 
 # Find the default encoding, in UTF-8
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test_utf8", $LOCALEDIR);
     $_->textdomain("test_utf8");
     $_ = $_->encoding;
@@ -104,8 +104,8 @@ ok($_, "UTF-8");
 
 # Turn to UTF-8
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test_utf8", $LOCALEDIR);
     $_->textdomain("test_utf8");
     $_->encoding("UTF-8");
@@ -118,8 +118,8 @@ ok($_, "å¤§å®¶å¥½ã€‚");
 
 # Turn to Big5
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test_utf8", $LOCALEDIR);
     $_->textdomain("test_utf8");
     $_->encoding("Big5");
@@ -132,8 +132,8 @@ ok($_, "¤j®a¦n¡C");
 
 # Turn to UTF-16LE
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test_utf8", $LOCALEDIR);
     $_->textdomain("test_utf8");
     $_->encoding("UTF-16LE");
@@ -147,8 +147,8 @@ ok($_, "'Y¶[}Y0");
 # Find the default encoding
 # Simplified Chinese
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-cn");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-cn");
     $_->bindtextdomain("test_utf8", $LOCALEDIR);
     $_->textdomain("test_utf8");
     $_ = $_->encoding;
@@ -160,8 +160,8 @@ ok($_, "UTF-8");
 
 # Turn to GB2312
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-cn");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-cn");
     $_->bindtextdomain("test_utf8", $LOCALEDIR);
     $_->textdomain("test_utf8");
     $_->encoding("GB2312");
@@ -175,8 +175,8 @@ ok($_, "´ó¼ÒºÃ¡£");
 # Encode failure
 # FB_DEFAULT
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test2", $LOCALEDIR);
     $_->textdomain("test2");
     $_->encoding("GB2312");
@@ -189,8 +189,8 @@ ok($_, "¹ÊÊÂ¶¼ÓÐÃÀ?µÄ?¾Ö¡£");
 
 # FB_CROAK
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test2", $LOCALEDIR);
     $_->textdomain("test2");
     $_->encoding("GB2312");
@@ -202,8 +202,8 @@ ok($@, qr/does not map to/);
 
 # FB_HTMLCREF
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test2", $LOCALEDIR);
     $_->textdomain("test2");
     $_->encoding("GB2312");

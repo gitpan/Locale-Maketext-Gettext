@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.07;
+$VERSION = 0.08;
 @EXPORT = qw(read_mo readmo);
 @EXPORT_OK = @EXPORT;
 
@@ -19,10 +19,12 @@ use Encode qw(encode decode FB_DEFAULT);
 use File::Spec::Functions qw(catfile);
 no strict qw(refs);
 
-use vars qw(%Lexicons %ENCODINGS $REREAD_MO $MOFILE $_AUTO @SYSTEM_LOCALEDIRS);
+use vars qw(%Lexicons %ENCODINGS $REREAD_MO $MOFILE $_AUTO $_EMPTY);
 $REREAD_MO = 0;
 $MOFILE = "";
 $_AUTO = Locale::Maketext::Gettext::_AUTO->get_handle;
+$_EMPTY = Locale::Maketext::Gettext::_EMPTY->get_handle;
+use vars qw(@SYSTEM_LOCALEDIRS);
 @SYSTEM_LOCALEDIRS = qw(/usr/share/locale /usr/lib/locale
     /usr/local/share/locale /usr/local/lib/locale);
 
@@ -60,11 +62,23 @@ sub key_encoding {
 
 # Sorry for Sean... :p  I have to initialize several variables
 sub new {
+    local ($_, %_);
     my ($self, $class);
     # Nothing fancy!
     $class = ref($_[0]) || $_[0];
     $self = bless {}, $class;
-    
+    $self->subclass_init;
+    $self->init;
+    return $self;
+}
+
+# subclass_init: Initialize at the subclass level, so that it can be
+#                inherited by calling $self->SUPER:subclass_init
+sub subclass_init {
+    local ($_, %_);
+    my ($self, $class);
+    $self = $_[0];
+    $class = ref($self);
     # Initialize the instance lexicon
     $self->{"Lexicon"} = {};
     # Initialize the LOCALEDIRS registry
@@ -82,11 +96,11 @@ sub new {
     $self->{"LOCALE"} = $class;
     $self->{"LOCALE"} =~ s/^.*:://;
     $self->{"LOCALE"} =~ s/(_)(.*)$/$1 . uc $2/e;
+    # Map i_default to C
+    $self->{"LOCALE"} = "C" if $self->{"LOCALE"} eq "i_default";
     # Set the category.  Currently this is always LC_MESSAGES
     $self->{"CATEGORY"} = "LC_MESSAGES";
-    
-    $self->init;
-    return $self;
+    return;
 }
 
 # bindtextdomain: Bind a text domain to a locale directory
@@ -210,10 +224,9 @@ sub maketext {
     
     # If the instance lexicon is changed.
     # Maketext uses a class lexicon.  We have to copy the instance
-    #   lexicon into the class lexicon.
-    # This is slow and stupid.  Mass memory copy sucks.  Avoid create
-    #   several objects for a single localization subclass whenever
-    #   possible.
+    #   lexicon into the class lexicon.  This is slow.  Mass memory
+    #   copy sucks.  Avoid create several language handles for a
+    #   single localization subclass whenever possible.
     # Maketext uses class lexicon in order to track the inheritance.
     #   It is hard to change it.
     if (${"$class\::MOFILE"} ne $self->{"MOFILE"}) {
@@ -228,8 +241,11 @@ sub maketext {
             defined $self->{"KEY_ENCODING"};
     
     # Process with the _AUTO lexicon for lookup failures
-    if (    !exists ${$self->{"Lexicon"}}{$key}
-            && !$self->{"DIE_FOR_LOOKUP_FAILURES"}) {
+    # Lookup failures
+    if (!exists ${$self->{"Lexicon"}}{$key}) {
+        # Die, bastard!
+        $_EMPTY->maketext($key, @param)
+            if $self->{"DIE_FOR_LOOKUP_FAILURES"};
         $_ = $_AUTO->maketext($key, @param);
     # Process with the ordinary maketext
     } else {
@@ -377,7 +393,7 @@ sub encode_failure {
     # Specify the action used in the keys
     $self->{"ENCODE_FAILURE"} = $CHECK if defined $CHECK;
     
-    # Returns the encoding
+    # Return the encoding
     return $self->{"ENCODE_FAILURE"};
 }
 
@@ -400,6 +416,23 @@ use base qw(Locale::Maketext);
 use vars qw($VERSION @ISA %Lexicon);
 $VERSION = 0.01;
 %Lexicon = ( "_AUTO" => 1 );
+
+# Public empty lexicon
+package Locale::Maketext::Gettext::_EMPTY;
+use 5.008;
+use strict;
+use warnings;
+use base qw(Locale::Maketext);
+use vars qw($VERSION @ISA %Lexicon);
+$VERSION = 0.01;
+
+package Locale::Maketext::Gettext::_EMPTY::i_default;
+use 5.008;
+use strict;
+use warnings;
+use base qw(Locale::Maketext);
+use vars qw($VERSION @ISA %Lexicon);
+$VERSION = 0.01;
 
 return 1;
 
@@ -477,6 +510,15 @@ Set the current text domain.  Returns the C<DOMAIN> itself.  If
 C<DOMAIN> is omitted, the current text domain is returned.  This
 method always success.
 
+=item $text = $LH->maketext($key, @param...)
+
+Lookup the $key in current lexicon and return a translated message
+in users language.  This is the same method in
+L<Locale::Maketext(3)|Locale::Maketext/3>, with a wrapper that
+returns the text string C<encode>d according to the current
+C<encoding>.  Refer to L<Locale::Maketext(3)|Locale::Maketext/3> for
+the maketext plural notation.
+
 =item $LH->language_tag
 
 Retrieve the language tag.  This is the same method in
@@ -488,22 +530,6 @@ Set or retrieve the output encoding.  The default is the same
 encoding as the gettext MO file.  You should not override this
 method, as contract to the current practice of
 L<Locale::Maketext(3)|Locale::Maketext/3>.
-
-=item $text = $LH->maketext($key, @param...)
-
-The same method in L<Locale::Maketext(3)|Locale::Maketext/3>, with
-a wrapper that return the text string C<encode>d according to the
-current C<encoding>.  Refer to
-L<Locale::Maketext(3)|Locale::Maketext/3> for its details.
-
-B<NOTICE:> I<MyPackage::L10N::en-E<gt>maketext(...) is not available
-anymore,> as the C<maketext> method is no more static.  That is a
-sure result, as %Lexicon is imported from foreign sources
-dynamically, but not statically hardcoded in perl sources.  But the
-documentation of L<Locale::Maketext(3)|Locale::Maketext/3> does not
-say that you can use it as a static method anyway.  Maybe you were
-practicing this before.  You had better check your existing code for
-this.  If you try to invoke it statically, it returns C<undef>.
 
 =item $LH->die_for_lookup_failures(SHOULD_I_DIE)
 
@@ -544,7 +570,7 @@ are having troubles like:
 Unterminated bracket group, in:
 
 Then, specify the C<key_encoding> to the encoding of your original
-text.  Returns the current setting.
+text.  Return the current setting.
 
 =back
 
@@ -554,7 +580,7 @@ text.  Returns the current setting.
 
 =item %Lexicon = read_mo($MOfile);
 
-Read and parse the MO file.  Returns the read %Lexicon.  The returned
+Read and parse the MO file.  Return the read %Lexicon.  The returned
 lexicon is in its original encoding.
 
 If you need the meta infomation of your MO file, parse the entry
@@ -570,7 +596,7 @@ package.
 
 =item ($encoding, %Lexicon) = readmo($MOfile);
 
-(deprecated) Read and parse the MO file.  Returns a suggested default
+(deprecated) Read and parse the MO file.  Return a suggested default
 encoding and %Lexicon.  The suggested encoding is the encoding of the
 MO file itself.  The %Lexicon is returned in perl's internal
 encoding.
@@ -646,6 +672,15 @@ The current system locale directory search order for C<textdomain>
 is: /usr/share/locale, /usr/lib/locale, /usr/local/share/locale,
 /usr/local/lib/locale.  Suggestions for this search order are
 welcome.
+
+B<NOTICE:> I<MyPackage::L10N::en-E<gt>maketext(...) is not available
+anymore,> as the C<maketext> method is no more static.  That is a
+sure result, as %Lexicon is imported from foreign sources
+dynamically, but not statically hardcoded in perl sources.  But the
+documentation of L<Locale::Maketext(3)|Locale::Maketext/3> does not
+say that you can use it as a static method anyway.  Maybe you were
+practicing this before.  You had better check your existing code for
+this.  If you try to invoke it statically, it returns C<undef>.
 
 C<dgettext> and C<dcgettext> in GNU gettext are not implemented.
 It's not possible to temporarily change the current text domain in

@@ -17,14 +17,14 @@ use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
-# Basic checks
+# Basic test suite
 use Encode qw(decode);
 use vars qw($META $n $k1 $k2 $s1 $s2);
 
 # bindtextdomain
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_ = $_->bindtextdomain("test");
 };
@@ -35,8 +35,8 @@ ok($_, "$LOCALEDIR");
 
 # textdomain
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->textdomain;
@@ -84,8 +84,8 @@ ok($s2, "Hiya :)");
 
 # English
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
@@ -97,8 +97,8 @@ ok($_, "Hiya :)");
 
 # Traditional Chinese
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
@@ -110,8 +110,8 @@ ok($_, "¤j®a¦n¡C");
 
 # Simplified Chinese
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-cn");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-cn");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");

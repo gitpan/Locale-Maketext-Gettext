@@ -21,8 +21,8 @@ $LOCALEDIR = catdir($FindBin::Bin, "locale");
 # GNU gettext never fails!
 # bindtextdomain
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_ = $_->bindtextdomain("test");
 };
 # 1
@@ -32,8 +32,8 @@ ok($_, undef);
 
 # textdomain
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_ = $_->textdomain;
 };
@@ -44,8 +44,8 @@ ok($_, undef);
 
 # No text domain claimed yet
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_ = $_->maketext("Hello, world!");
 };
 # 5
@@ -55,8 +55,8 @@ ok($_, "Hello, world!");
 
 # Non-existing LOCALEDIR
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", "/dev/null");
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
@@ -68,8 +68,8 @@ ok($_, "Hello, world!");
 
 # Not-registered DOMAIN
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->textdomain("not_registered");
     $_ = $_->maketext("Hello, world!");
 };
@@ -80,8 +80,8 @@ ok($_, "Hello, world!");
 
 # PO file not exists
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("no_such_domain", $LOCALEDIR);
     $_->textdomain("no_such_domain");
     $_ = $_->maketext("Hello, world!");
@@ -93,8 +93,8 @@ ok($_, "Hello, world!");
 
 # PO file invalid
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("bad", $LOCALEDIR);
     $_->textdomain("bad");
     $_ = $_->maketext("Hello, world!");
@@ -106,8 +106,8 @@ ok($_, "Hello, world!");
 
 # No such message
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("non-existing message");
@@ -119,8 +119,8 @@ ok($_, "non-existing message");
 
 # die_for_lookup_failures
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->die_for_lookup_failures(1);
@@ -131,8 +131,8 @@ ok($@, qr/maketext doesn't know how to say/);
 
 # multibyte keys
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->key_encoding("Big5");
@@ -145,8 +145,8 @@ ok($_, "¡]¥¼³]©w¡^");
 
 # Call maketext before and after binding text domain
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->maketext("Hello, world!");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");

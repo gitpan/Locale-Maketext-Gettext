@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# Test suite for the racing conditions
+# Test suite for switching between different settings
 # Copyright (c) 2003 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
@@ -17,15 +17,15 @@ use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
-# Racing conditions
+# Switching between different settings
 use vars qw($lh1 $lh2 $t1 $t2 $t3 $t4 $t5 $t6 $dir $f $f1 $f2);
 # 2 language handles of the same localization subclass
 eval {
-    require TestPkg::L10N;
-    $lh1 = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $lh1 = T_L10N->get_handle("en");
     $lh1->bindtextdomain("test", $LOCALEDIR);
     $lh1->textdomain("test");
-    $lh2 = TestPkg::L10N->get_handle("en");
+    $lh2 = T_L10N->get_handle("en");
     $lh2->bindtextdomain("test2", $LOCALEDIR);
     $lh2->textdomain("test2");
     $t1 = $lh1->maketext("Hello, world!");
@@ -52,8 +52,8 @@ ok($t6, "Every story has a happy ending.");
 
 # Switch between domains
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->bindtextdomain("test2", $LOCALEDIR);
     $_->textdomain("test");
@@ -83,8 +83,8 @@ ok($t6, "Every story has a happy ending.");
 
 # Switch between encodings
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->encoding("Big5");
@@ -112,8 +112,8 @@ eval {
     unlink $f if -f $f;
     link $f1, $f    or die "ERROR: $!";
     
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test_reload", $LOCALEDIR);
     $_->textdomain("test_reload");
     $t1 = $_->maketext("Hello, world!");

@@ -7,7 +7,7 @@ WriteMakefile(
     AUTHOR		=> 'imacat <imacat@mail.imacat.idv.tw>',
     ABSTRACT		=> 'Joins gettext and Maketext frameworks',
     NAME                => 'Locale-Maketext-Gettext',
-    VERSION_FROM        => 'lib/Locale/Maketext/Gettext.pm',
+    VERSION             => '1.01',
     PREREQ_PM		=> { },
     
     dist		=> {

@@ -20,15 +20,15 @@ $LOCALEDIR = catdir($FindBin::Bin, "locale");
 # Hybrid racing conditionr
 use vars qw($lh1 $lh2);
 eval {
-    require TestPkg::L10N;
+    require T_L10N;
     
-    $lh1 = TestPkg::L10N->get_handle("zh-tw");
+    $lh1 = T_L10N->get_handle("zh-tw");
     $lh1->bindtextdomain("test", $LOCALEDIR);
     $lh1->textdomain("test");
     $lh1->encoding("Big5");
     $lh1->die_for_lookup_failures(0);
     
-    $lh2 = TestPkg::L10N->get_handle("zh-tw");
+    $lh2 = T_L10N->get_handle("zh-tw");
     $lh2->bindtextdomain("test2", $LOCALEDIR);
     $lh2->textdomain("test2");
     $lh2->encoding("UTF-8");

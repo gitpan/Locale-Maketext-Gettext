@@ -20,8 +20,8 @@ $LOCALEDIR = catdir($FindBin::Bin, "locale");
 # Check reading big-endian PO files
 # English
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("en");
+    require T_L10N;
+    $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test_be", $LOCALEDIR);
     $_->textdomain("test_be");
     $_ = $_->maketext("Hello, world!");
@@ -33,8 +33,8 @@ ok($_, "Hiya :)");
 
 # Traditional Chinese
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-tw");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test_be", $LOCALEDIR);
     $_->textdomain("test_be");
     $_ = $_->maketext("Hello, world!");
@@ -46,8 +46,8 @@ ok($_, "¤j®a¦n¡C");
 
 # Simplified Chinese
 eval {
-    require TestPkg::L10N;
-    $_ = TestPkg::L10N->get_handle("zh-cn");
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-cn");
     $_->bindtextdomain("test_be", $LOCALEDIR);
     $_->textdomain("test_be");
     $_ = $_->maketext("Hello, world!");
