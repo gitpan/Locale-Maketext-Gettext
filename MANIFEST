@@ -5,12 +5,14 @@ Makefile.PL
 README
 THANKS
 lib/Locale/Maketext/Gettext.pm
+lib/Locale/Maketext/Gettext/Functions.pm
 t/1-basic.t
 t/2-big-endian.t
 t/3-errors.t
 t/4-encodings.t
 t/5-switching.t
 t/6-racing.t
+t/7-functions.t
 t/TestPkg/L10N.pm
 t/locale/en/LC_MESSAGES/bad.mo
 t/locale/en/LC_MESSAGES/test.mo

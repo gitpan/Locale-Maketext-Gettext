@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.06;
+$VERSION = 0.07;
 @EXPORT = qw(read_mo readmo);
 @EXPORT_OK = @EXPORT;
 
@@ -22,7 +22,7 @@ no strict qw(refs);
 use vars qw(%Lexicons %ENCODINGS $REREAD_MO $MOFILE $_AUTO @SYSTEM_LOCALEDIRS);
 $REREAD_MO = 0;
 $MOFILE = "";
-$_AUTO = Locale::Maketext::Gettext::_AUTO::L10N->get_handle;
+$_AUTO = Locale::Maketext::Gettext::_AUTO->get_handle;
 @SYSTEM_LOCALEDIRS = qw(/usr/share/locale /usr/lib/locale
     /usr/local/share/locale /usr/local/lib/locale);
 
@@ -384,17 +384,21 @@ sub encode_failure {
 # Public _AUTO lexicon -- process auto lexicon with it, but not the _AUTO
 #   lexicon entry, so that the compiled cache of %Lexicon can be preserved
 #   and reduce the memory-copy and compilation overhead
-package Locale::Maketext::Gettext::_AUTO::L10N;
+package Locale::Maketext::Gettext::_AUTO;
+use 5.008;
 use strict;
 use warnings;
 use base qw(Locale::Maketext);
-use vars qw(@ISA %Lexicon);
+use vars qw($VERSION @ISA %Lexicon);
+$VERSION = 0.01;
 
-package Locale::Maketext::Gettext::_AUTO::L10N::i_default;
+package Locale::Maketext::Gettext::_AUTO::i_default;
+use 5.008;
 use strict;
 use warnings;
 use base qw(Locale::Maketext);
-use vars qw(@ISA %Lexicon);
+use vars qw($VERSION @ISA %Lexicon);
+$VERSION = 0.01;
 %Lexicon = ( "_AUTO" => 1 );
 
 return 1;
@@ -463,30 +467,15 @@ Locale::Maketext::Gettext.  That's all. ^_*'
 
 =item $LH->bindtextdomain(DOMAIN, LOCALEDIR)
 
-Register a text domain with a locale directory.  It is only a
-registration.  Nothing really happens.  No check is ever made to
-whether this C<LOCALEDIR> exists, nor if that C<DOMAIN> really sits
-in this C<LOCALEDIR>.  Returns C<LOCALEDIR> itself.  If C<LOCALEDIR>
-is omitted, the registered locale directory of C<DOMAIN> is returned.
-If C<DOMAIN> is not even registered yet, returns C<undef>.  This
-method always success.
+Register a text domain with a locale directory.  Returns C<LOCALEDIR>
+itself.  If C<LOCALEDIR> is omitted, the registered locale directory
+of C<DOMAIN> is returned.  This method always success.
 
 =item $LH->textdomain(DOMAIN)
 
-Set the current text domain.  If C<DOMAIN> was not registered with
-C<bindtextdomain> before, search the system locale directories for
-the corresponding MO file.  Then, it reads the MO file and replaces
-your current %Lexicon with this new lexicon.  If anything goes wrong,
-for example, MO file not found, unreadable, NFS disconnection, etc.,
-it returns immediatly and the your lexicon becomes empty.  Returns
-the C<DOMAIN> itself.  If C<DOMAIN> is omitted, the current text
-domain is returned.  If the current text domain is not even set yet,
-returns C<undef>.  This method always success.
-
-The current system locale directory search order is:
-/usr/share/locale, /usr/lib/locale, /usr/local/share/locale,
-/usr/local/lib/locale.  Suggestions for this search order are
-welcome.
+Set the current text domain.  Returns the C<DOMAIN> itself.  If
+C<DOMAIN> is omitted, the current text domain is returned.  This
+method always success.
 
 =item $LH->language_tag
 
@@ -499,35 +488,6 @@ Set or retrieve the output encoding.  The default is the same
 encoding as the gettext MO file.  You should not override this
 method, as contract to the current practice of
 L<Locale::Maketext(3)|Locale::Maketext/3>.
-
-=item $LH->encode_failure(CHECK)
-
-Set the action when encode fails.  This happens when the output text
-is out of the scope of your output encoding.  For exmaple, output
-Chinese into US-ASCII.  Refer to L<Encode(3)|Encode/3> for the
-possible values of this C<CHECK>.  The default is C<FB_DEFAULT>,
-which is a safe choice that never fails.  But part of your text may
-be lost, since that is what C<FB_DEFAULT> does.  Returns the current
-setting.
-
-=item $LH->key_encoding(ENCODING)
-
-Specify the encoding used in your original text.  The C<maketext>
-method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
-using your native non-English language as your original text and you
-are having troubles like:
-
-Unterminated bracket group, in:
-
-Then, specify the C<key_encoding> to the encoding of your original
-text.  Returns the current setting.
-
-This is a workaround, not a solution.  There is no solution to this
-problem yet.  You should avoid using non-English language as your
-original text.  You'll get yourself into trouble if you mix several
-original text encodings, for example, joining several pieces of code
-from programmers all around the world.  Solution suggestions are
-welcome.
 
 =item $text = $LH->maketext($key, @param...)
 
@@ -563,6 +523,28 @@ restart the application.  For example, when you are a co-hoster on a
 mod_perl-enabled Apache, or when your mod_perl-enabled Apache is too
 vital to be restarted for every update of your MO file, or if you
 are running a vital daemon, such as an X display server.
+
+=item $LH->encode_failure(CHECK)
+
+Set the action when encode fails.  This happens when the output text
+is out of the scope of your output encoding.  For exmaple, output
+Chinese into US-ASCII.  Refer to L<Encode(3)|Encode/3> for the
+possible values of this C<CHECK>.  The default is C<FB_DEFAULT>,
+which is a safe choice that never fails.  But part of your text may
+be lost, since that is what C<FB_DEFAULT> does.  Returns the current
+setting.
+
+=item $LH->key_encoding(ENCODING)
+
+Specify the encoding used in your original text.  The C<maketext>
+method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
+using your native non-English language as your original text and you
+are having troubles like:
+
+Unterminated bracket group, in:
+
+Then, specify the C<key_encoding> to the encoding of your original
+text.  Returns the current setting.
 
 =back
 
@@ -660,6 +642,11 @@ Chinese conversion, as GNU gettext smartly does, do it yourself with
 L<Encode::HanExtra(3)|Encode::HanExtra/3>, too.  There may be a
 solution for this in the future, but not now.
 
+The current system locale directory search order for C<textdomain>
+is: /usr/share/locale, /usr/lib/locale, /usr/local/share/locale,
+/usr/local/lib/locale.  Suggestions for this search order are
+welcome.
+
 C<dgettext> and C<dcgettext> in GNU gettext are not implemented.
 It's not possible to temporarily change the current text domain in
 the current design of Locale::Maketext::Gettext.  Besides, it's
@@ -683,6 +670,14 @@ lexicon whenever it is changed by another language handle instance.
 But this involves large scaled memory copy, which affects the
 proformance seriously.  This is discouraged.  You are adviced to use
 a single textdomain for a single localization class.
+
+The C<key_encoding> is a workaround, not a solution.  There is no
+solution to this problem yet.  You should avoid using non-English
+language as your original text.  You'll get yourself into trouble if
+you mix several original text encodings, for example, joining
+several pieces of code from programmers all around the world, with
+their messages written in their own language and encodings.  Solution
+suggestions are welcome.
 
 =head1 BUGS
 

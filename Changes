@@ -1,5 +1,15 @@
 Locale-Maketext-Gettext change log
 
+2003-04-28
+	 1. The first Locale::Maketext::Gettext::Functions is out.
+	    It works! ^_*'  Although it cannot deal with real world
+	    problems still. ^^;
+
+2003-04-27
+	 1. The name of the _AUTO lexicon package is shorten to
+	    Locale::Maketext::Gettext::_AUTO.
+	 2. Documentation rearrange.
+
 2003-04-27	version 0.06
 	Improvements.
 	 1. textdomain works for default system locale directories
