@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# Test suite for the behavior when something went wrong
+# Test suite for the behavior when something goes wrong
 # Copyright (c) 2003 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
@@ -17,7 +17,7 @@ use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
-# When something went wrong
+# When something goes wrong
 # GNU gettext never fails!
 # bindtextdomain
 eval {
@@ -133,7 +133,7 @@ ok($@, qr/maketext doesn't know how to say/);
 eval {
     require T_L10N;
     $_ = T_L10N->get_handle("zh-tw");
-    $_->bindtextdomain("test", $LOCALEDIR);
+    $_->bindtextdomain("test", "/dev/null");
     $_->textdomain("test");
     $_->key_encoding("Big5");
     $_ = $_->maketext("¡]¥¼³]©w¡^");

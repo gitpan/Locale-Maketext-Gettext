@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# Test suite for the different encodings
+# Test suite for different encodings
 # Copyright (c) 2003 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.

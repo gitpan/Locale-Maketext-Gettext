@@ -18,7 +18,7 @@ use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # Switching between different settings
-use vars qw($lh1 $lh2 $t1 $t2 $t3 $t4 $t5 $t6 $dir $f $f1 $f2);
+use vars qw($lh1 $lh2 $dir $f $f1 $f2);
 # 2 language handles of the same localization subclass
 eval {
     require T_L10N;
@@ -28,27 +28,27 @@ eval {
     $lh2 = T_L10N->get_handle("en");
     $lh2->bindtextdomain("test2", $LOCALEDIR);
     $lh2->textdomain("test2");
-    $t1 = $lh1->maketext("Hello, world!");
-    $t2 = $lh1->maketext("Every story has a happy ending.");
-    $t3 = $lh2->maketext("Hello, world!");
-    $t4 = $lh2->maketext("Every story has a happy ending.");
-    $t5 = $lh1->maketext("Hello, world!");
-    $t6 = $lh1->maketext("Every story has a happy ending.");
+    $_[0] = $lh1->maketext("Hello, world!");
+    $_[1] = $lh1->maketext("Every story has a happy ending.");
+    $_[2] = $lh2->maketext("Hello, world!");
+    $_[3] = $lh2->maketext("Every story has a happy ending.");
+    $_[4] = $lh1->maketext("Hello, world!");
+    $_[5] = $lh1->maketext("Every story has a happy ending.");
 };
 # 1
 ok($@, "");
 # 2
-ok($t1, "Hiya :)");
+ok($_[0], "Hiya :)");
 # 3
-ok($t2, "Every story has a happy ending.");
+ok($_[1], "Every story has a happy ending.");
 # 4
-ok($t3, "Hello, world!");
+ok($_[2], "Hello, world!");
 # 5
-ok($t4, "Pray it.");
+ok($_[3], "Pray it.");
 # 6
-ok($t5, "Hiya :)");
+ok($_[4], "Hiya :)");
 # 7
-ok($t6, "Every story has a happy ending.");
+ok($_[5], "Every story has a happy ending.");
 
 # Switch between domains
 eval {
@@ -57,29 +57,29 @@ eval {
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->bindtextdomain("test2", $LOCALEDIR);
     $_->textdomain("test");
-    $t1 = $_->maketext("Hello, world!");
-    $t2 = $_->maketext("Every story has a happy ending.");
+    $_[0] = $_->maketext("Hello, world!");
+    $_[1] = $_->maketext("Every story has a happy ending.");
     $_->textdomain("test2");
-    $t3 = $_->maketext("Hello, world!");
-    $t4 = $_->maketext("Every story has a happy ending.");
+    $_[2] = $_->maketext("Hello, world!");
+    $_[3] = $_->maketext("Every story has a happy ending.");
     $_->textdomain("test");
-    $t5 = $_->maketext("Hello, world!");
-    $t6 = $_->maketext("Every story has a happy ending.");
+    $_[4] = $_->maketext("Hello, world!");
+    $_[5] = $_->maketext("Every story has a happy ending.");
 };
 # 8
 ok($@, "");
 # 9
-ok($t1, "Hiya :)");
+ok($_[0], "Hiya :)");
 # 10
-ok($t2, "Every story has a happy ending.");
+ok($_[1], "Every story has a happy ending.");
 # 11
-ok($t3, "Hello, world!");
+ok($_[2], "Hello, world!");
 # 12
-ok($t4, "Pray it.");
+ok($_[3], "Pray it.");
 # 13
-ok($t5, "Hiya :)");
+ok($_[4], "Hiya :)");
 # 14
-ok($t6, "Every story has a happy ending.");
+ok($_[5], "Every story has a happy ending.");
 
 # Switch between encodings
 eval {
@@ -88,20 +88,20 @@ eval {
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->encoding("Big5");
-    $t1 = $_->maketext("Hello, world!");
+    $_[0] = $_->maketext("Hello, world!");
     $_->encoding("UTF-8");
-    $t2 = $_->maketext("Hello, world!");
+    $_[1] = $_->maketext("Hello, world!");
     $_->encoding("Big5");
-    $t3 = $_->maketext("Hello, world!");
+    $_[2] = $_->maketext("Hello, world!");
 };
 # 15
 ok($@, "");
 # 16
-ok($t1, "¤j®a¦n¡C");
+ok($_[0], "¤j®a¦n¡C");
 # 17
-ok($t2, "å¤§å®¶å¥½ã€‚");
+ok($_[1], "å¤§å®¶å¥½ã€‚");
 # 18
-ok($t3, "¤j®a¦n¡C");
+ok($_[2], "¤j®a¦n¡C");
 
 # Reload the text
 eval {
@@ -109,36 +109,36 @@ eval {
     $f = catfile($dir, "test_reload.mo");
     $f1 = catfile($dir, "test.mo");
     $f2 = catfile($dir, "test2.mo");
-    unlink $f if -f $f;
+    unlink $f;
     link $f1, $f    or die "ERROR: $!";
     
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test_reload", $LOCALEDIR);
     $_->textdomain("test_reload");
-    $t1 = $_->maketext("Hello, world!");
-    $t2 = $_->maketext("Every story has a happy ending.");
+    $_[0] = $_->maketext("Hello, world!");
+    $_[1] = $_->maketext("Every story has a happy ending.");
     unlink $f;
     link $f2, $f    or die "ERROR: $!";
-    $t3 = $_->maketext("Hello, world!");
-    $t4 = $_->maketext("Every story has a happy ending.");
+    $_[2] = $_->maketext("Hello, world!");
+    $_[3] = $_->maketext("Every story has a happy ending.");
     $_->reload_text;
-    $t5 = $_->maketext("Hello, world!");
-    $t6 = $_->maketext("Every story has a happy ending.");
+    $_[4] = $_->maketext("Hello, world!");
+    $_[5] = $_->maketext("Every story has a happy ending.");
     
     unlink $f;
 };
 # 19
 ok($@, "");
 # 20
-ok($t1, "Hiya :)");
+ok($_[0], "Hiya :)");
 # 21
-ok($t2, "Every story has a happy ending.");
+ok($_[1], "Every story has a happy ending.");
 # 22
-ok($t3, "Hiya :)");
+ok($_[2], "Hiya :)");
 # 23
-ok($t4, "Every story has a happy ending.");
+ok($_[3], "Every story has a happy ending.");
 # 24
-ok($t5, "Hello, world!");
+ok($_[4], "Hello, world!");
 # 25
-ok($t6, "Pray it.");
+ok($_[5], "Pray it.");

@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 17 }
+BEGIN { plan tests => 29 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir catfile);
@@ -17,143 +17,186 @@ use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
-# fork_and_test: Use fork to test, to avoid polluting the package space
-sub fork_and_test {
-    local ($_, %_);
-    my ($CODE, $PW, $PE, $CR, $CE, $pid, $len);
-    $CODE = $_[0];
-    pipe $CR, $PW;
-    pipe $CE, $PE;
-    # Systems that does not support fork
-    defined($pid = fork) or return;
-    # Test in the child process
-    if ($pid == 0) {
-        eval $CODE;
-        print $PE "" . (length $@) . "\n";
-        print $PE $@;
-        $_ = defined $_? $_: "(undef)";
-        print $PW "" . (length $_) . "\n";
-        print $PW $_;
-        exit 0;
-    # Read the result in the parent process
-    } else {
-        $len = <$CE>;
-        chomp $len;
-        read $CE, $@, $len;
-        $len = <$CR>;
-        chomp $len;
-        read $CR, $_, $len;
-    }
-    return $_;
-}
-
 # Basic test suite
 # bindtextdomain
-$_ = fork_and_test << "EOT";
+eval {
     use Locale::Maketext::Gettext::Functions;
-    \$_ = bindtextdomain("test", \$LOCALEDIR);
-EOT
+    $_ = bindtextdomain("test", $LOCALEDIR);
+};
 # 1
 ok($@, "");
 # 2
 ok($_, $LOCALEDIR);
 
 # textdomain
-$_ = fork_and_test << "EOT";
+eval {
     use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
-    \$_ = textdomain("test");
-EOT
+    bindtextdomain("test", $LOCALEDIR);
+    $_ = textdomain("test");
+};
 # 3
 ok($@, "");
 # 4
 ok($_, "test");
 
 # get_handle
-$_ = fork_and_test << "EOT";
+eval {
     use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
+    bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
-EOT
+};
 # 5
 ok($@, "");
 
 # maketext
-$_ = fork_and_test << "EOT";
+eval {
     use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
+    bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
-    \$_ = maketext("Hello, world!");
-EOT
+    $_ = maketext("Hello, world!");
+};
 # 6
 ok($@, "");
 # 7
 ok($_, "Hiya :)");
 
 # __ (shortcut to maketext)
-$_ = fork_and_test << "EOT";
+eval {
     use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
+    bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
-    \$_ = __("Hello, world!");
-EOT
+    $_ = __("Hello, world!");
+};
 # 8
 ok($@, "");
 # 9
 ok($_, "Hiya :)");
 
 # N_ (do nothing)
-$_ = fork_and_test << "EOT";
+eval {
     use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
+    bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
-    \$_ = N_("Hello, world!");
-EOT
+    $_ = N_("Hello, world!");
+};
 # 10
 ok($@, "");
 # 11
 ok($_, "Hello, world!");
 
-# maketext
-# English
-$_ = fork_and_test << "EOT";
+# N_ (do nothing)
+eval {
     use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
+    bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
-    \$_ = __("Hello, world!");
-EOT
+    # ゅ硂采﹁ナ :p From: 芖臨艵
+    @_ = N_("Hello, world!", "Cool!", "Big watermelon");
+};
 # 12
 ok($@, "");
 # 13
-ok($_, "Hiya :)");
-
-# Traditional Chinese
-$_ = fork_and_test << "EOT";
-    use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
-    textdomain("test");
-    get_handle("zh-tw");
-    \$_ = __("Hello, world!");
-EOT
+ok($_[0], "Hello, world!");
 # 14
-ok($@, "");
-# 14
-ok($_, "產");
+ok($_[1], "Cool!");
+# 15
+ok($_[2], "Big watermelon");
 
-# Simplified Chinese
-$_ = fork_and_test << "EOT";
+eval {
     use Locale::Maketext::Gettext::Functions;
-    bindtextdomain("test", \$LOCALEDIR);
+    bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
-    get_handle("zh-cn");
-    \$_ = __("Hello, world!");
-EOT
+    get_handle("en");
+    $_ = N_("Hello, world!");
+};
 # 16
 ok($@, "");
 # 17
+ok($_, "Hello, world!");
+
+# maketext
+# English
+eval {
+    use Locale::Maketext::Gettext::Functions;
+    bindtextdomain("test", $LOCALEDIR);
+    textdomain("test");
+    get_handle("en");
+    $_ = __("Hello, world!");
+};
+# 18
+ok($@, "");
+# 19
+ok($_, "Hiya :)");
+
+# Traditional Chinese
+eval {
+    use Locale::Maketext::Gettext::Functions;
+    bindtextdomain("test", $LOCALEDIR);
+    textdomain("test");
+    get_handle("zh-tw");
+    $_ = __("Hello, world!");
+};
+# 20
+ok($@, "");
+# 21
+ok($_, "產");
+
+# Simplified Chinese
+eval {
+    use Locale::Maketext::Gettext::Functions;
+    bindtextdomain("test", $LOCALEDIR);
+    textdomain("test");
+    get_handle("zh-cn");
+    $_ = __("Hello, world!");
+};
+# 22
+ok($@, "");
+# 23
+ok($_, "大家好。");
+
+# maketext - by environment
+# English
+eval {
+    use Locale::Maketext::Gettext::Functions;
+    bindtextdomain("test", $LOCALEDIR);
+    textdomain("test");
+    $ENV{"LANG"} = "en";
+    get_handle();
+    $_ = __("Hello, world!");
+};
+# 24
+ok($@, "");
+# 25
+ok($_, "Hiya :)");
+
+# Traditional Chinese
+eval {
+    use Locale::Maketext::Gettext::Functions;
+    bindtextdomain("test", $LOCALEDIR);
+    textdomain("test");
+    $ENV{"LANG"} = "zh-tw";
+    get_handle();
+    $_ = __("Hello, world!");
+};
+# 26
+ok($@, "");
+# 27
+ok($_, "產");
+
+# Simplified Chinese
+eval {
+    use Locale::Maketext::Gettext::Functions;
+    bindtextdomain("test", $LOCALEDIR);
+    textdomain("test");
+    $ENV{"LANG"} = "zh-cn";
+    get_handle();
+    $_ = __("Hello, world!");
+};
+# 28
+ok($@, "");
+# 29
 ok($_, "大家好。");

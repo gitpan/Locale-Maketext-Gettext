@@ -1,15 +1,57 @@
 Locale-Maketext-Gettext change log
 
-2003-04-29	version 1.02
+2003-05-02	version 1.03
+	 1. L::M::G:  A algorism bug about key_encoding with
+	    auto-lexicon was fixed.
+	 2. L::M::G::F:  I decide to give up mod_perl safety for
+	    encoding, key_encoding, encode_failure and
+	    die_for_lookup_failures.  POSIX::setlocale didn't
+	    solve this problem, either.  Use L::M::G if you need
+	    that.  Suggestions and solutions are welcome.
+	 3. L::M::G:  FLH (Failure language handler) is added to
+	    help switching the die_for_lookup_failures setting.
+	    Maketext can be slightly faster.
+
+2003-05-01
+	Labor's Day!
+	A Major rewrite to Locale::Maketext::Gettext::Functions.
+	 1. Packages are declared by a random class ID, instead
+	    of by its text domain previously, in order for a text
+	    domain to be redeclared with different sets of
+	    languages infinitely.  This solves the problem where
+	    languages cannot to be removed at run-time.  You can
+	    add/remove languages/MO files at run time now.  You
+	    can also bindtextdomain() to another directory after
+	    setting textdomain().  This is not possible to the
+	    object interface of Locale::Maketext::Gettext (and
+	    (Locale::Maketext).
+	 2. fork_and_test is removed from the test suite.  It
+	    does not seem to be required by the current random
+	    class ID system anymore.
+	 3. The used of ($t1..$t6) is replaced by ($_[0]..$_[5])
+	    in to 05-switching.t.
+	 4. Garbage collection is added.  Language handles
+	    associated with abandoned localization classes are
+	    dropped in time, in order to reduce memory used.
+
+2003-04-30
+	 1. L::M::G::F:  I forgot to document dmaketext, too. ^^;
+	    But, no, I will not put a third release today!
+	 2. L::M::G::F:  Fixes to documentation typos.
+	 3. maketext() and __() are exchanged.  maketext() is a
+            wrapper to __() now.  The speed of __() should be
+	    slightly faster.
+
+2003-04-30	version 1.02
 	Documentation fixes.
 	 1. L::M::G::F:  Documentation fixes.  get_handle was
 	    not included in the documentation. ^^;  I forgot to
 	    put it in.
-	 2. README was updated.  L::M::G::F was included in the
+	 2. README was updated.  L::M::G::F is included in the
 	    README.  Also, the installation procedure is updated,
 	    too.  I forgot to update it last time.
 
-2003-04-29	version 1.01
+2003-04-30	version 1.01
 	Improvements to Locale::Maketext::Gettext::Functions.
 	 1. L::M::G::F:  Documentation fixes.  Lots of errors sit
 	    there in the previous documentation.  It's impossible
@@ -25,6 +67,8 @@ Locale-Maketext-Gettext change log
 	    initialization is moved from the new method to the
 	    subclass_init method, so that another subclass may
 	    inherit it further.
+	 8. L::M::G::F:  The "experimental" warning is removed.
+	    Large amount of errors can be handled gracefully now.
 
 2003-04-28
 	 1. TestPkg/L10N.pm is renamed as T_L10N.pm.  It is neater.

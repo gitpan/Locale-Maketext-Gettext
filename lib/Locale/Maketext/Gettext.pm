@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.08;
+$VERSION = 0.09;
 @EXPORT = qw(read_mo readmo);
 @EXPORT_OK = @EXPORT;
 
@@ -87,6 +87,7 @@ sub subclass_init {
     $self->{"REREAD_MO"} = $REREAD_MO;
     # Initialize the DIE_FOR_LOOKUP_FAILURES setting
     $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
+    $self->{"FLH"} = $_AUTO;
     # Initialize the ENCODE_FAILURE setting
     $self->{"ENCODE_FAILURE"} = FB_DEFAULT;
     # Initialize the MOFILE value of this instance
@@ -237,23 +238,25 @@ sub maketext {
     # Decode the _AUTO lexicon first, in order for the _AUTO lexicon
     #   to be multibyte-safe as possible.
     $key = decode($self->{"KEY_ENCODING"}, $key, $self->{"ENCODE_FAILURE"})
-        if  !exists ${$self->{"Lexicon"}}{$key} &&
-            defined $self->{"KEY_ENCODING"};
+        if defined $self->{"KEY_ENCODING"};
     
     # Process with the _AUTO lexicon for lookup failures
     # Lookup failures
     if (!exists ${$self->{"Lexicon"}}{$key}) {
-        # Die, bastard!
-        $_EMPTY->maketext($key, @param)
-            if $self->{"DIE_FOR_LOOKUP_FAILURES"};
-        $_ = $_AUTO->maketext($key, @param);
+        $_ = $self->{"FLH"}->maketext($key, @param);
+        # Wrap the output encoding
+        if (defined $self->{"ENCODING"}) {
+            $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
+        # Turn back to the encoding of the source text
+        } elsif (defined $self->{"KEY_ENCODING"}) {
+            $_ = encode($self->{"KEY_ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
+        }
     # Process with the ordinary maketext
     } else {
         $_ = $self->SUPER::maketext($key, @param);
+        # Encode with the output encoding
+        $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
     }
-    # Encode with the output encoding
-    $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"})
-        if defined $self->{"ENCODING"};
     
     return $_;
 }
@@ -362,22 +365,24 @@ sub reload_text {
 }
 
 # die_for_lookup_failures: Whether we should die for lookup failure
-# The default is no.  GNU gettext never fails.
+#   The default is no.  GNU gettext never fails.
 sub die_for_lookup_failures {
     local ($_, %_);
-    my ($self, $is_die, $class);
+    my ($self, $is_die);
     ($self, $is_die) = @_;
-    
     # This is not a static method
     return if ref($self) eq "";
-    # Find the class name
-    $class = ref($self);
-    
     # Return the current setting
     return $self->{"DIE_FOR_LOOKUP_FAILURES"} if !defined $is_die;
-    
-    # Set and return
-    return ($self->{"DIE_FOR_LOOKUP_FAILURES"} = ($is_die? 1: 0));
+    # Set the current setting
+    if ($is_die) {
+        $self->{"FLH"} = $_EMPTY;
+    	$self->{"DIE_FOR_LOOKUP_FAILURES"} = 1;
+    } else {
+        $self->{"FLH"} = $_AUTO;
+    	$self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
+    }
+    return $self->{"DIE_FOR_LOOKUP_FAILURES"};
 }
 
 # encode_failure: What to do if the text is out of your output encoding
@@ -531,6 +536,28 @@ encoding as the gettext MO file.  You should not override this
 method, as contract to the current practice of
 L<Locale::Maketext(3)|Locale::Maketext/3>.
 
+=item $LH->key_encoding(ENCODING)
+
+Specify the encoding used in your original text.  The C<maketext>
+method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
+using your native non-English language as your original text and you
+are having troubles like:
+
+Unterminated bracket group, in:
+
+Then, specify the C<key_encoding> to the encoding of your original
+text.  Returns the current setting.
+
+=item $LH->encode_failure(CHECK)
+
+Set the action when encode fails.  This happens when the output text
+is out of the scope of your output encoding.  For exmaple, output
+Chinese into US-ASCII.  Refer to L<Encode(3)|Encode/3> for the
+possible values of this C<CHECK>.  The default is C<FB_DEFAULT>,
+which is a safe choice that never fails.  But part of your text may
+be lost, since that is what C<FB_DEFAULT> does.  Returns the current
+setting.
+
 =item $LH->die_for_lookup_failures(SHOULD_I_DIE)
 
 Maketext dies for lookup failures, but GNU gettext never fails.
@@ -549,28 +576,6 @@ restart the application.  For example, when you are a co-hoster on a
 mod_perl-enabled Apache, or when your mod_perl-enabled Apache is too
 vital to be restarted for every update of your MO file, or if you
 are running a vital daemon, such as an X display server.
-
-=item $LH->encode_failure(CHECK)
-
-Set the action when encode fails.  This happens when the output text
-is out of the scope of your output encoding.  For exmaple, output
-Chinese into US-ASCII.  Refer to L<Encode(3)|Encode/3> for the
-possible values of this C<CHECK>.  The default is C<FB_DEFAULT>,
-which is a safe choice that never fails.  But part of your text may
-be lost, since that is what C<FB_DEFAULT> does.  Returns the current
-setting.
-
-=item $LH->key_encoding(ENCODING)
-
-Specify the encoding used in your original text.  The C<maketext>
-method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
-using your native non-English language as your original text and you
-are having troubles like:
-
-Unterminated bracket group, in:
-
-Then, specify the C<key_encoding> to the encoding of your original
-text.  Returns the current setting.
 
 =back
 

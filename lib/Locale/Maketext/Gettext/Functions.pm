@@ -11,22 +11,35 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.03;
-@EXPORT = qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext reload_text read_mo);
+$VERSION = 0.04;
+@EXPORT = qw();
+push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
+push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
 @EXPORT_OK = @EXPORT;
 
+use Encode qw(encode decode from_to FB_DEFAULT);
 use File::Spec::Functions qw(catdir catfile);
 use Locale::Maketext::Gettext qw(read_mo);
-use vars qw(%LOCALEDIRS %CLASSES %DOMAINS);
-use vars qw(%LHS $_AUTO $LH $DOMAIN $CATEGORY $CLASSBASE);
+use vars qw(%LOCALEDIRS %RIDS %CLASSES %LANGS);
+use vars qw(%LHS $_AUTO $_EMPTY $LH $FLH $DOMAIN $CATEGORY $CLASSBASE @LANGS);
+use vars qw($ENCODING $KEY_ENCODING $ENCODE_FAILURE $DIE_FOR_LOOKUP_FAILURES);
 %LHS = qw();
-# The internal auto lexicon from Locale::Maketext::Gettext
+# The internal auto/empty lexicons from Locale::Maketext::Gettext
 $_AUTO = $Locale::Maketext::Gettext::_AUTO;
+$_EMPTY = $Locale::Maketext::Gettext::_EMPTY;
+$FLH = $_AUTO;
 # The category is always LC_MESSAGES
 $CATEGORY = "LC_MESSAGES";
 $CLASSBASE = "Locale::Maketext::Gettext::_runtime";
-use vars qw(@LANGS);
+# Current language parameters
 @LANGS = qw();
+$ENCODE_FAILURE = FB_DEFAULT;
+$DIE_FOR_LOOKUP_FAILURES = 0;
+# Parameters for random class IDs
+use vars qw($RID_LEN @RID_CHARS);
+$RID_LEN = 8;
+@RID_CHARS = split //,
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 # bindtextdomain: Bind a text domain to a locale directory
 sub bindtextdomain {
@@ -36,8 +49,14 @@ sub bindtextdomain {
     # Return the current registry
     return (exists $LOCALEDIRS{$domain}? $LOCALEDIRS{$domain}: undef)
         if !defined $LOCALEDIR;
-    # Register and return the locale directory
-    return ($LOCALEDIRS{$domain} = $LOCALEDIR);
+    # Register the locale directory
+    $LOCALEDIRS{$domain} = $LOCALEDIR;
+    # Reinitialize the text domain
+    _init_textdomain($domain);
+    # Reset the current language handle
+    _get_handle() if defined $DOMAIN && $domain eq $DOMAIN;
+    # Return the locale directory
+    return $LOCALEDIR;
 }
 
 # textdomain: Set the current text domain
@@ -49,10 +68,10 @@ sub textdomain {
     return $DOMAIN if !defined $new_domain;
     # Set the current text domain
     $DOMAIN = $new_domain;
-    # Initialize this text domain
+    # Reinitialize the text domain
     _init_textdomain($DOMAIN);
-    # Reset the language handle
-    _get_handle($DOMAIN, @LANGS);
+    # Reset the current language handle
+    _get_handle();
     return $DOMAIN;
 }
 
@@ -61,24 +80,45 @@ sub get_handle {
     local ($_, %_);
     # Register the current get_handle arguments
     @LANGS = @_;
-    # Reset the language handle
-    _get_handle($DOMAIN, @LANGS);
-    return;
+    # Reset and return the current language handle
+    return _get_handle();
 }
 
-# maketext: Maketext
+# maketext: Maketext, in its long name
 sub maketext {
-    local ($_, %_);
-    my ($key, @param);
-    ($key, @param) = @_;
-    # Reset the language handle if it is not set yet
-    _get_handle($DOMAIN, @LANGS) if !defined $LH;
-    return $LH->maketext($key, @param);
+    return __(@_);
 }
 
-# __: A shortcut synonym to maketext
+# __: Maketext, in its shortcut name
 sub __ {
-    return maketext(@_);
+    local ($_, %_);
+    my ($key, @param, $msg, $encoding, $lh_encoding, $key_encoding);
+    ($key, @param) = @_;
+    # Encode the source text
+    $key = decode($KEY_ENCODING, $key, $ENCODE_FAILURE)
+        if defined $KEY_ENCODING;
+    # Reset the current language handle if it is not set yet
+    _get_handle() if !defined $LH;
+    
+    # Lookup failures.  Let the fail handler take over
+    if (!exists ${$LH->{"Lexicon"}}{$key}) {
+        $msg = $FLH->maketext($key, @param);
+        # Wrap the output encoding
+        if (defined $ENCODING) {
+            $msg = encode($ENCODING, $msg, $ENCODE_FAILURE);
+        # Turn back to the encoding of the source text
+        } elsif (defined $KEY_ENCODING) {
+            $msg = encode($KEY_ENCODING, $msg, $ENCODE_FAILURE);
+        }
+    # Process with the ordinary maketext
+    } else {
+        $msg = $LH->maketext($key, @param);
+        # Wrap the output encoding
+        from_to($msg, $LH->encoding, $ENCODING, $ENCODE_FAILURE)
+            if defined $ENCODING;
+    }
+    
+    return $msg;
 }
 
 # N_: Return the original text untouched, so that it can be catched
@@ -93,18 +133,16 @@ sub N_ {
 #            an equivalent to dgettext.
 sub dmaketext {
     local ($_, %_);
-    my ($domain, $key, @param, $lh0, $text);
+    my ($domain, $key, @param, $lh0, $domain0, $text);
     ($domain, $key, @param) = @_;
-    # Initialize this text domain
-    _init_textdomain($domain);
-    # Preserve the current language handle
-    $lh0 = $LH;
-    # Set the current language handle
-    _get_handle($domain, @LANGS);
+    # Preserve the current status
+    ($lh0, $domain0) = ($LH, $DOMAIN);
+    # Reinitialize the text domain
+    textdomain($domain);
     # Maketext
-    $text = $LH->maketext($key, @param);
-    # Return the current language handle
-    $LH = $lh0;
+    $text = maketext($key, @param);
+    # Return the current status
+    ($LH, $DOMAIN) = ($lh0, $domain0);
     # Return the "made text"
     return $text;
 }
@@ -118,30 +156,69 @@ sub reload_text {
 # encoding: Set the output encoding
 sub encoding {
     local ($_, %_);
+    my ($new_encoding);
+    $new_encoding = $_[0];
+    # Return the current encoding
+    if (!defined $new_encoding) {
+        return $ENCODING if defined $ENCODING;
+        return if !defined $LH;
+        return $LH->encoding;
+    }
+    # Set and return the current output encoding
+    return ($ENCODING = $new_encoding);
 }
 
 # key_encoding: Set the encoding of the original text
 sub key_encoding {
     local ($_, %_);
+    my ($new_key_encoding);
+    $new_key_encoding = $_[0];
+    # Return the current key encoding
+    return $KEY_ENCODING if !defined $new_key_encoding;
+    # Set and return the current output encoding
+    return ($KEY_ENCODING = $new_key_encoding);
 }
 
-# _reg_class: Declare and register a class
-sub _reg_class {
+# encode_failure: What to do if the text is out of your output encoding
+#   Refer to Encode on possible values of this check
+sub encode_failure {
     local ($_, %_);
-    $_ = $_[0];
-    # Return if it is declared
-    return if exists $CLASSES{$_};
-    # Declare it
+    my ($CHECK);
+    $CHECK = $_[0];
+    # Return the current setting
+    return $ENCODE_FAILURE if !defined $CHECK;
+    # Set and return the current setting
+    return ($ENCODE_FAILURE = $CHECK);
+}
+
+# die_for_lookup_failures: Whether we should die for lookup failure
+#   The default is no.  GNU gettext never fails.
+sub die_for_lookup_failures {
+    local ($_, %_);
+    my $is_die;
+    $is_die = $_[0];
+    # Return the current setting
+    return $DIE_FOR_LOOKUP_FAILURES if !defined $is_die;
+    # Set the current setting
+    if ($is_die) {
+        $FLH = $_EMPTY;
+        $DIE_FOR_LOOKUP_FAILURES = 1;
+    } else {
+        $FLH = $_AUTO;
+        $DIE_FOR_LOOKUP_FAILURES = 0;
+    }
+    # Resetting the current language handle is not required
+    # Lookup failures are handled by the fail handler directly
+    return $DIE_FOR_LOOKUP_FAILURES;
+}
+
+# _declare_class: Declare a class
+sub _declare_class {
     eval << "EOT";
-package $_;
-use strict;
-use warnings;
+package $_[0];
 use base qw(Locale::Maketext::Gettext);
 use vars qw(\@ISA %Lexicon);
 EOT
-    # Register it
-    $CLASSES{$_} = 1;
-    return;
 }
 
 # _catclass: Catenate the class name
@@ -152,97 +229,143 @@ sub _catclass {
 # _init_textdomain: Initialize a text domain
 sub _init_textdomain {
     local ($_, %_);
-    my ($domain, $DH, $locale, $MOfile);
+    my ($domain, $k, $MOfile, @langs, $langs);
     $domain = $_[0];
     
-    # Return if this domain was not binded yet
-    return if !exists $LOCALEDIRS{$domain};
+    # Return if text domain not specified, or not binded yet
+    return if !defined $domain || !exists $LOCALEDIRS{$domain};
+    # Obtain the registry key
+    $k = _k($domain);
     
-    # Return if this domain is initialized before
-    return if exists $DOMAINS{$domain};
-    
-    # Declaire and register the localization class
-    _reg_class(_catclass($CLASSBASE, $domain));
-    # Get the available locales
-    opendir $DH, $LOCALEDIRS{$domain}   or return;
-    while (defined($locale = readdir $DH)) {
-        # Skip hidden entries
-        next if $locale =~ /^\./;
-        # Skip non-directories
-        next unless -d catdir($LOCALEDIRS{$domain}, $locale);
-        # Skip locales with dot "." (encoding)
-        next if $locale =~ /\./;
-        # Get the MO file name
-        $MOfile = catfile($LOCALEDIRS{$domain}, $locale,
-            $CATEGORY, "$domain.mo");
-        # Skip if MO file is not available for this locale
-        next if ! -f $MOfile && ! -r $MOfile;
-        # Map C to i_default
-        $locale = "i_default" if $locale eq "C";
-        # Declaire and register the language subclass
-        _reg_class(_catclass($CLASSBASE, $domain, lc $locale));
+    # Obtain the available locales
+    {
+        my ($DH, $entry);
+        @langs = qw();
+        opendir $DH, $LOCALEDIRS{$domain}   or last;
+        while (defined($entry = readdir $DH)) {
+            # Skip hidden entries
+            next if $entry =~ /^\./;
+            # Skip non-directories
+            next unless -d catdir($LOCALEDIRS{$domain}, $entry);
+            # Skip locales with dot "." (trailing encoding)
+            next if $entry =~ /\./;
+            # Get the MO file name
+            $MOfile = catfile($LOCALEDIRS{$domain}, $entry,
+                $CATEGORY, "$domain.mo");
+            # Skip if MO file is not available for this locale
+            next if ! -f $MOfile && ! -r $MOfile;
+            # Map C to i_default
+            $entry = "i_default" if $entry eq "C";
+            # Add this language
+            push @langs, lc $entry;
+        }
+        close $DH                           or last;
     }
-    closedir $DH                        or return;
+    $langs = join ",", sort @langs;
     
-    # Record it
-    $DOMAINS{$domain} = 1;
+    # Available language list remains for this domain
+    return if exists $LANGS{$k} && $LANGS{$k} eq $langs;
+    
+    my ($rid, $class);
+    # Register this new language list
+    $LANGS{$k} = $langs;
+    # Garbage collection - drop abandoned language handles
+    if (exists $CLASSES{$k}) {
+        delete $LHS{$_} foreach grep /^$CLASSES{$k}/, keys %LHS;
+    }
+    # Get a new class ID
+    $rid = _new_rid();
+    # Obtain the class name
+    $class = _catclass($CLASSBASE, $rid);
+    # Register the domain with this class
+    $CLASSES{$k} = $class;
+    # Declare this class
+    _declare_class($class);
+    # Declare its language subclasses
+    _declare_class(_catclass($class, $_))
+        foreach @langs;
     
     return;
 }
 
-# _get_handle: Set the language handle
+# _get_handle: Set the language handle with the current DOMAIN and @LANGS
 sub _get_handle {
     local ($_, %_);
-    my ($domain, @langs, $class, $lang, $key);
-    ($domain, @langs) = @_;
-    # Domain not set or locale directory not registered yet
-    if (!defined $domain || !exists $LOCALEDIRS{$domain}) {
-        # Use the auto lexicon
-        $LH = $_AUTO;
-    } else {
-        # Get the localization class name
-        $class = _catclass($CLASSBASE, $domain);
-        no strict qw(refs);
-        # Get the handle
-        $LH = $class->get_handle(@langs);
-        # Success
-        if (defined $LH) {
-            $lang = scalar($LH);
-            $lang =~ s/^.*:://;
-            $key = join("\n", $domain, $lang);
-            # Registered before
-            if (exists $LHS{$key}) {
-                # Use the existing language handle whenever possible, to
-                # reduce the initialization overhead
-                $LH = $LHS{$key};
-            # Not registered before
-            } else {
-                # Initialize it
-                $LH->bindtextdomain($domain, $LOCALEDIRS{$domain});
-                $LH->textdomain($domain);
-                # Register it
-                $LHS{$key} = $LH;
-            }
-        # Failed
-        } else {
-            # Use the auto lexicon as a fallback
-            $LH = $_AUTO;
-        }
-    }
-    return;
+    my ($k, $class, $subclass);
+    
+    # Use the auto lexicon if text domain not specified, or not binded yet
+    return _lang($LH = $FLH)
+        if !defined $DOMAIN || !exists $LOCALEDIRS{$DOMAIN};
+    # Obtain the registry key
+    $k = _k($DOMAIN);
+    # Use the auto lexicon if text domain was not properly set yet
+    return _lang($LH = $FLH) if !exists $CLASSES{$k};
+    
+    # Get the localization class name
+    $class = $CLASSES{$k};
+    # Get the language handle
+    $LH = $class->get_handle(@LANGS);
+    # Fallback to the auto lexicon if failed get_handle
+    return _lang($LH = $FLH) if !defined $LH;
+    
+    # Obtain the subclass name of the got language handle
+    $subclass = ref($LH);
+    # Use the existing language handle whenever possible, to reduce
+    # the initialization overhead
+    return _lang($LH = $LHS{$subclass}) if exists $LHS{$subclass};
+    
+    # Initialize it
+    $LH->bindtextdomain($DOMAIN, $LOCALEDIRS{$DOMAIN});
+    $LH->textdomain($DOMAIN);
+    # Register it
+    $LHS{$subclass} = $LH;
+    
+    return _lang($LH);
 }
 
 # _reset: Initialize everything
 sub _reset {
     local ($_, %_);
+    
     %LOCALEDIRS = qw();
-    %LHS = qw();
-    $_AUTO = $Locale::Maketext::Gettext::_AUTO;
-    %DOMAINS = qw();
     undef $LH;
     undef $DOMAIN;
     @LANGS = qw();
+    undef $ENCODING;
+    undef $KEY_ENCODING;
+    $ENCODE_FAILURE = FB_DEFAULT;
+    
     return;
+}
+
+# _new_rid: Generate a new random ID
+sub _new_rid {
+    local ($_, %_);
+    my ($id);
+    
+    do {
+        for ($id = "", $_ = 0; $_ < $RID_LEN; $_++) {
+            $id .= $RID_CHARS[int rand scalar @RID_CHARS];
+        }
+    } while exists $RIDS{$id};
+    $RIDS{$id} = 1;
+    
+    return $id;
+}
+
+# _k: Build the key for the domain registry
+sub _k {
+    return join "\n", $LOCALEDIRS{$_[0]}, $CATEGORY, $_[0];
+}
+
+# _lang: The langage from a language handle.  language_tag isn't quite sane.
+sub _lang {
+    local ($_, %_);
+    $_ = $_[0];
+    $_ = ref($_);
+    s/^.+:://;
+    s/_/-/g;
+    return $_;
 }
 
 return 1;
@@ -258,7 +381,7 @@ Locale::Maketext::Gettext::Functions - Functional interface to Locale::Maketext:
   use Locale::Maketext::Gettext::Functions;
   bindtextdomain(DOMAIN, LOCALEDIR);
   textdomain(DOMAIN);
-  get_handle();
+  get_handle("de");
   print __("Hello, world!\n");
 
 =head1 DESCRIPTION
@@ -274,25 +397,25 @@ all.
 
 The C<maketext> and C<dmaketext> functions attempt to translate a
 text string into the user's native language, by looking up the
-translation in a message catalog.
+translation in an MO lexicon file.
 
 =head1 FUNCTIONS
 
 =over
 
-=item bindtextdomain(DOMAIN, LOCALEDIR);
+=item bindtextdomain(DOMAIN, LOCALEDIR)
 
 Register a text domain with a locale directory.  Returns C<LOCALEDIR>
 itself.  If C<LOCALEDIR> is omitted, the registered locale directory
 of C<DOMAIN> is returned.  This method always success.
 
-=item textdomain(DOMAIN);
+=item textdomain(DOMAIN)
 
 Set the current text domain.  Returns the C<DOMAIN> itself.  if
 C<DOMAIN> is omitted, the current text domain is returned.  This
 method always success.
 
-=item get_handle(@languages);
+=item get_handle(@languages)
 
 Set the user's language.  It searches for an available language in
 the provided @languages list.  If @languages was not provided, it
@@ -301,37 +424,76 @@ when running as CGI.  Refer to
 L<Locale::Maketext(3)|Locale::Maketext/3> for the magic of the
 C<get_handle>.
 
-=item $message = maketext($key, @param...);
+=item $message = maketext($key, @param...)
 
 Attempts to translate a text string into the user's native language,
-by looking up the translation in a message catalog.  Refer to
+by looking up the translation in an MO lexicon file.  Refer to
 L<Locale::Maketext(3)|Locale::Maketext/3> for the C<maketext> plural
 grammer.
 
-=item $message = __($key, @param...);
+=item $message = __($key, @param...)
 
 A synonym to C<maketext()>.  This is a shortcut to C<maketext()> so
 that it is cleaner when you employ maketext to your existing project.
 
-=item ($key, @param...) = N_($key, @param...);
+=item ($key, @param...) = N_($key, @param...)
 
 Returns the original text untouched.  This is to enable the text be
 catched with xgettext.
 
-=item reload_text();
+=item $message = dmaketext($domain, $key, @param...)
+
+Temporarily switch to another text domain and attempts to translate
+a text string into the user's native language in that text domain.
+
+=item encoding(ENCODING)
+
+Set or retrieve the output encoding.  The default is the same
+encoding as the gettext MO file.
+
+=item key_encoding(ENCODING)
+
+Specify the encoding used in your original text.  The C<maketext>
+method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
+using your native non-English language as your original text and you
+are having troubles like:
+
+Unterminated bracket group, in:
+
+Then, specify the C<key_encoding> to the encoding of your original
+text.  Returns the current setting.
+
+=item encode_failure(CHECK)
+
+Set the action when encode fails.  This happens when the output text
+is out of the scope of your output encoding.  For exmaple, output
+Chinese into US-ASCII.  Refer to L<Encode(3)|Encode/3> for the
+possible values of this C<CHECK>.  The default is C<FB_DEFAULT>,
+which is a safe choice that never fails.  But part of your text may
+be lost, since that is what C<FB_DEFAULT> does.  Returns the current
+setting.
+
+=item die_for_lookup_failures(SHOULD_I_DIE)
+
+Maketext dies for lookup failures, but GNU gettext never fails.
+By default Lexicon::Maketext::Gettext follows the GNU gettext
+behavior.  But if you are Maketext-styled, or if you need a better
+control over the failures (like me :p), set this to 1.  Returns the
+current setting.
+
+=item reload_text()
 
 Purges the MO text cache.  By default MO files are cached after they
-are read and parse from the disk, to reduce I/O and parsing overhead
-on busy sites.  reload_text() purges this cache.  The next time
-C<maketext> is called, the MO file will be read and parse from the
-disk again.  This is used when your MO file is updated, but you
-cannot shutdown and restart the application.  For example, when you
-are a co-hoster on a mod_perl-enabled Apache, or when your
-mod_perl-enabled Apache is too vital to be restarted for every
-update of your MO file, or if you are running a vital daemon, such
-as an X display server.
+are read and parsed from the disk, to reduce I/O and parsing overhead
+on busy sites.  reload_text() purges this cache, so that updated MO
+files can take effect at run-time.  This is used when your MO file is
+updated, but you cannot shutdown and restart the application.  for
+example, when you are a co-hoster on a mod_perl-enabled Apache, or
+when your mod_perl-enabled Apache is too vital to be restarted for
+every update of your MO file, or if you are running a vital daemon,
+such as an X display server.
 
-=item %Lexicon = read_mo($MOfile);
+=item %Lexicon = read_mo($MOfile)
 
 Read and parse the MO file.  Returns the read %Lexicon.  The returned
 lexicon is in its original encoding.
@@ -346,17 +508,20 @@ C<$Lexicon{""}>.  For example:
 
 =head1 NOTES
 
-B<WARNING:>  Due to the design of perl itself, run-time removal of a
-locale from your package does not work.
-L<Locale::Maketext(3)|Locale::Maketext/3> finds a language handle by
-looking for a valid subclass package, and run-time unloading of a
-package is not available to perl.  You always have to restart your
-application if you remove an MO file.  This includes restarting a
-mod_perl-enabled Apache.
+You can now add/remove languages/MO files at run-time.  This is a
+major improvement over the original
+L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> (and
+L<Locale::Maketext(3)|Locale::Maketext/3>). ^_*'  This is done by
+registering localization classes with random IDs, so that the same
+text domain can be re-declared infinitely, whenever needed (language
+list changes, LOCALEDIR changes, etc.)  This is not possible to the
+object-interface of
+L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> (and
+L<Locale::Maketext(3)|Locale::Maketext/3>).
 
-For the same reason, rebinding of a text domain to another locale
-directory may not work as you expected.  Declared subclass packages
-cannot be taken back.  Solutions may be possible, though.  
+Language addition/removal takes effect only after C<bindtextdomain>
+or C<textdomain> is called.  It has no effect on C<maketext> calls.
+This keeps a basic sanity in the lifetime of a running script.
 
 =head1 STORY
 
@@ -389,7 +554,7 @@ But what if C<get_handle> itself fails?  So, this becomes:
   use base qw(Locale::Maketext);
   %Lexicon = ( "_AUTO" => 1 );
 
-Ya, this works.  But, if I have always have to do this in my every
+Ya, this works.  But, if I always have to do this in my every
 application, why shouldn't I make a solution to the localization
 framework itself?  This is a common problem to every localization
 projects.  It should be solved at the localization framework level,
@@ -417,19 +582,19 @@ imacat, 2003-04-29
 
 =head1 BUGS
 
-=over
+C<encoding>, C<key_encoding>, C<encode_failure> and
+C<die_for_lookup_failures> are not mod_perl-safe.  These settings
+affect the whole process, including the following scripts it is
+going to run.  This is the same as C<setlocale> in
+L<POSIX(3)|POSIX/3>.  Always set them at the very beginning of your
+script if you are running under mod_perl.  If you don't like it,
+use the object-oriented
+L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> instead.
+Suggestions or solutions are welcome.
 
-=item encoding not supported yet
-
-Source text encoding and output encoding is not supported yet.
-Locale::Maketext::Gettext::Functions is still not multibyte-safe.
-Solutions or suggestions are welcome.
-
-=item lookup failure control not supported yet
-
-Solutions or suggestions are welcome.
-
-=back
+Smart translation between Traditional Chinese/Simplified Chinese,
+like what GNU gettext does, is not available yet.  Suggestions or
+solutions are welcome.
 
 =head1 SEE ALSO
 

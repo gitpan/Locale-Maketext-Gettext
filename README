@@ -20,7 +20,7 @@ all. ^_*'
 
 Locale::Maketext::Gettext::Functions is a functional
 interface to Locale::Maketext::Gettext (and Locale::Maketext).
-It works exactly the GNU gettext way.  It plays magic to
+It works completely the GNU gettext way.  It plays magic to
 Locale::Maketext.  No more localization class/subclasses and language
 handles are required.
 
