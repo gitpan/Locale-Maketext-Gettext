@@ -1,0 +1,31 @@
+Locale::Maketext::Gettext brings GNU gettext and Maketext together.
+It is a subclass of L<Locale::Maketext(3)|Locale::Maketext/3> that
+follows the way GNU gettext works.  It works seamlessly, I<both in
+the sense of GNU gettext and Maketext>.
+
+You start as an usual GNU gettext localization project:  Work on
+PO files with the help of translators, reviewers and Emacs.  Turn
+them into MO files with F<msgfmt>.  Copy them into the appropriate
+locale directory, such as
+F</usr/share/locale/de/LC_MESSAGES/myapp.mo>.
+
+Then, build your Maketext localization class, with your base class
+changed from L<Locale::Maketext(3)|Locale::Maketext/3> to
+Locale::Maketext::Gettext.  That's all. ^_*'
+
+* Installation
+
+Locale::Maketext::Gettext uses the standard perl module install process:
+
+perl Makefile.PL
+make
+make install
+
+Sorry, its test suite is not available yet. :p  Someone may have to
+teach me on this. *^_^*
+
+* Copyright
+
+Copyright (c) 2003 imacat. All rights reserved. This program is free
+software; you can redistribute it and/or modify it under the same terms
+as Perl itself.
