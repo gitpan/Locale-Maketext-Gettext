@@ -570,7 +570,7 @@ are having troubles like:
 Unterminated bracket group, in:
 
 Then, specify the C<key_encoding> to the encoding of your original
-text.  Return the current setting.
+text.  Returns the current setting.
 
 =back
 
@@ -580,7 +580,7 @@ text.  Return the current setting.
 
 =item %Lexicon = read_mo($MOfile);
 
-Read and parse the MO file.  Return the read %Lexicon.  The returned
+Read and parse the MO file.  Returns the read %Lexicon.  The returned
 lexicon is in its original encoding.
 
 If you need the meta infomation of your MO file, parse the entry
@@ -596,7 +596,7 @@ package.
 
 =item ($encoding, %Lexicon) = readmo($MOfile);
 
-(deprecated) Read and parse the MO file.  Return a suggested default
+(deprecated) Read and parse the MO file.  Returns a suggested default
 encoding and %Lexicon.  The suggested encoding is the encoding of the
 MO file itself.  The %Lexicon is returned in perl's internal
 encoding.

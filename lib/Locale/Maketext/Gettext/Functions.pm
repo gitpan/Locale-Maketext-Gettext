@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.02;
+$VERSION = 0.03;
 @EXPORT = qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext reload_text read_mo);
 @EXPORT_OK = @EXPORT;
 
@@ -263,12 +263,18 @@ Locale::Maketext::Gettext::Functions - Functional interface to Locale::Maketext:
 
 =head1 DESCRIPTION
 
-This is the functional interface to Locale::Maketext::Gettext (and
-Locale::Maketext).
+Locale::Maketext::Gettext::Functions is a functional
+interface to
+L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> (and
+L<Locale::Maketext(3)|Locale::Maketext/3>).  It works exactly the GNU
+gettext way.  It plays magic to
+L<Locale::Maketext(3)|Locale::Maketext/3> for you.  No more
+localization class/subclasses and language handles are required at
+all.
 
-The C<maketext> function attempts to translate a text string into
-the user's native language, by looking up the translation in a
-message catalog.
+The C<maketext> and C<dmaketext> functions attempt to translate a
+text string into the user's native language, by looking up the
+translation in a message catalog.
 
 =head1 FUNCTIONS
 
@@ -276,22 +282,31 @@ message catalog.
 
 =item bindtextdomain(DOMAIN, LOCALEDIR);
 
-Register a text domain with a locale directory.  Return C<LOCALEDIR>
+Register a text domain with a locale directory.  Returns C<LOCALEDIR>
 itself.  If C<LOCALEDIR> is omitted, the registered locale directory
 of C<DOMAIN> is returned.  This method always success.
 
 =item textdomain(DOMAIN);
 
-Set the current text domain.  Return the C<DOMAIN> itself.  if
+Set the current text domain.  Returns the C<DOMAIN> itself.  if
 C<DOMAIN> is omitted, the current text domain is returned.  This
 method always success.
+
+=item get_handle(@languages);
+
+Set the user's language.  It searches for an available language in
+the provided @languages list.  If @languages was not provided, it
+looks checks environment variable LANG, and HTTP_ACCEPT_LANGUAGE
+when running as CGI.  Refer to
+L<Locale::Maketext(3)|Locale::Maketext/3> for the magic of the
+C<get_handle>.
 
 =item $message = maketext($key, @param...);
 
 Attempts to translate a text string into the user's native language,
 by looking up the translation in a message catalog.  Refer to
-L<Locale::Maketext(3)|Locale::Maketext/3> for the details on
-its c<maketext> method.
+L<Locale::Maketext(3)|Locale::Maketext/3> for the C<maketext> plural
+grammer.
 
 =item $message = __($key, @param...);
 
@@ -300,12 +315,12 @@ that it is cleaner when you employ maketext to your existing project.
 
 =item ($key, @param...) = N_($key, @param...);
 
-Return the original text untouched.  This is to enable the text be
+Returns the original text untouched.  This is to enable the text be
 catched with xgettext.
 
 =item reload_text();
 
-Purge the MO text cache.  By default MO files are cached after they
+Purges the MO text cache.  By default MO files are cached after they
 are read and parse from the disk, to reduce I/O and parsing overhead
 on busy sites.  reload_text() purges this cache.  The next time
 C<maketext> is called, the MO file will be read and parse from the
@@ -318,7 +333,7 @@ as an X display server.
 
 =item %Lexicon = read_mo($MOfile);
 
-Read and parse the MO file.  Return the read %Lexicon.  The returned
+Read and parse the MO file.  Returns the read %Lexicon.  The returned
 lexicon is in its original encoding.
 
 If you need the meta infomation of your MO file, parse the entry

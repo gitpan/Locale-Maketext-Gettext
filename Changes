@@ -1,5 +1,14 @@
 Locale-Maketext-Gettext change log
 
+2003-04-29	version 1.02
+	Documentation fixes.
+	 1. L::M::G::F:  Documentation fixes.  get_handle was
+	    not included in the documentation. ^^;  I forgot to
+	    put it in.
+	 2. README was updated.  L::M::G::F was included in the
+	    README.  Also, the installation procedure is updated,
+	    too.  I forgot to update it last time.
+
 2003-04-29	version 1.01
 	Improvements to Locale::Maketext::Gettext::Functions.
 	 1. L::M::G::F:  Documentation fixes.  Lots of errors sit
