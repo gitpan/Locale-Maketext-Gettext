@@ -1,5 +1,37 @@
 Locale-Maketext-Gettext change log
 
+2003-04-27	version 0.06
+	Improvements.
+	 1. textdomain works for default system locale directories
+	    now.  For domains that are not binded with
+	    bindtextdomain, it searches the system locale directories
+	    to find the MO file.  No test suite is available for this
+	    functionality.  I cannot predict what MO files are
+	    available in your system locale directories. ^^;  Please
+	    report bugs if it does not work.
+	 2. Slave package Locale::Maketext::Gettext::_AUTO::L10N is
+	    added, in order to process the _AUTO Lexicon seperately.
+	    This saves resources when user change the
+	    die_for_lookup_failures setting.  Changing
+	    die_for_lookup_failures setting won't trigger copying and
+	    replacing whole %Lexicon anymore.  As an effect, the
+	    cached compiled result of the _AUTO lexicon is preserved
+	    and the compilation overhead from Locale::Maketext is
+	    greatly reduced.
+	 3. read_mo is added to retire the readmo.  Use of readmo is
+	    deprecated.  This idea is inspired by the implementation
+	    of readmo as "parse_mo" in Locale::Maketext::Lexicon by
+	    Autrijus.  There is far too much meta infomation to be
+	    returned other than its encoding.  It's not possible to
+	    change the API for each new requirement.  To enable
+	    sharing of the algorithm used in read_mo with whoever
+	    need it, it's necessary to limit its function to read
+	    and return the raw data, leaving all the other jobs to
+	    its caller.
+	 4. For the same reason, caching control is removed from
+	    read_mo, too.  read_mo read the MO file and return the
+	    %Lexicon only.  It really reads.  Nothing more. ^_*'
+
 2003-04-27	version 0.05
 	Bug and documentation fixes.
 	 1. New method key_encoding was added.  The _AUTO lexicon is
