@@ -1,10 +1,23 @@
 Locale-Maketext-Gettext change log
 
-2003-05-07	version 1.07
+2003-05-09	version 1.10
+	 1. Functions.pm: _get_handle: Fallback language handler
+	    changed from the failed language handler $FLH to
+	    the empty lexicon $_EMPTY.  This has no real effect,
+	    since lookup failures are always handled by $FLH, but
+	    not the current language handler $LH.  But this matches
+	    the reality.
+
+2003-05-08
+	 1. Changes: typo (version 1.07 should be version 1.09)
+
+2003-05-07
+	 1. Changes: An excess blank line is removed.
+
+2003-05-07	version 1.09
 	Test suite fix.
 	 1. 02-big-endian.t: Fix on $MSGFMT so that it works on
 	    more platforms.
-	
 
 2003-05-07	version 1.08
 	Fixes mistakes from version 1.07

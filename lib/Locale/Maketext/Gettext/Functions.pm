@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.06;
+$VERSION = 0.07;
 @EXPORT = qw();
 push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
@@ -320,20 +320,20 @@ sub _get_handle {
     local ($_, %_);
     my ($k, $class, $subclass);
     
-    # Use the auto lexicon if text domain not specified, or not binded yet
-    return _lang($LH = $FLH)
+    # Lexicon empty if text domain not specified, or not binded yet
+    return _lang($LH = $_EMPTY)
         if !defined $DOMAIN || !exists $LOCALEDIRS{$DOMAIN};
     # Obtain the registry key
     $k = _k($DOMAIN);
-    # Use the auto lexicon if text domain was not properly set yet
-    return _lang($LH = $FLH) if !exists $CLASSES{$k};
+    # Lexicon empty if text domain was not properly set yet
+    return _lang($LH = $_EMPTY) if !exists $CLASSES{$k};
     
     # Get the localization class name
     $class = $CLASSES{$k};
     # Get the language handle
     $LH = $class->get_handle(@LANGS);
-    # Fallback to the auto lexicon if failed get_handle
-    return _lang($LH = $FLH) if !defined $LH;
+    # Lexicon empty if failed get_handle
+    return _lang($LH = $_EMPTY) if !defined $LH;
     
     # Obtain the subclass name of the got language handle
     $subclass = ref($LH);
