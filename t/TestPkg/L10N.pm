@@ -1,3 +1,8 @@
+# Test localization class and its subclasses
+# Copyright (c) 2003 imacat. All rights reserved. This program is free
+# software; you can redistribute it and/or modify it under the same terms
+# as Perl itself.
+
 package TestPkg::L10N;
 use base qw(Locale::Maketext::Gettext);
 

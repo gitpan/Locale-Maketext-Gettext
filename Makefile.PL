@@ -4,12 +4,12 @@ use strict;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    AUTHOR		=> 'imacat (imacat@mail.imacat.idv.tw)',
-    ABSTRACT		=> 'brings gettext and Maketext together',
+    AUTHOR		=> 'imacat <imacat@mail.imacat.idv.tw>',
+    ABSTRACT		=> 'bridge Maketext to gettext',
     NAME                => 'Locale-Maketext-Gettext',
     VERSION_FROM        => 'lib/Locale/Maketext/Gettext.pm',
     PREREQ_PM		=> { },
-
+    
     dist		=> {
         COMPRESS	=> 'gzip -9',
         SUFFIX		=> '.gz',

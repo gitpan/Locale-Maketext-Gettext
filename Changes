@@ -1,17 +1,51 @@
-2003-04-26
+Locale-Maketext-Gettext change log
 
-        o Release 0.02
-        o Fixed the problem with clashing class variables.  Moved most
-          class variables to instant variables.
-        o Solved the default output encoding problem by using the encoding
-          of the MO file as the default encoding.
-        o reload_text method is added to purge the MO file cache, so that
-          applications won't have to restart when their MO file updates.
-        o Byte order of the MO files is detected now, and big-endian MO
-          files support is added.
-        o die_for_lookup_failures method was added.  The default behavior
-          changes to "never fails", as GNU gettext does.
+2003-04-25	version 0.03
+	Bug fixes.
+	 1. Fixed clashing of the die_for_lookup_failures setting
+	    from multiple instances.
+	 2. Change log is rewritten, to my own format.
+	 3. A new racing test suite is added.  The old racing test
+	    suite was renamed as t-switching.
+	 4. Redundant initialization of $LH->{"LOCALEDIRS"} in
+	    bindtextdomain is removed.
+	 5. An old line at die_for_lookup_failures which initialize
+	    a wrong $LH->{"LOCALE"} is removed.
+	 6. Removed 2 incorrect notice in the documentation.  There
+	    will not be infinite loops for bindtextdomain and
+	    textdomain, whatever value it takes.  Apparently I had
+	    made a mistake. ^^;
+	 7. Several typos in the comments are fixed.
+	 8. Sanity checks to the MO file is moved into readmo().
+	    Cache now has a higher precedence than the sanity checks,
+	    which conforms with the global design.
+	 9. More documentation was added to the SYNOPSIS.
+	10. Sanity checks for whether a method is invoked as a static
+	    method are added.  Maketext use static variables.  We
+	    should not clash them.
+	11. As a result of the above, the maketext method is no more
+	    static.  It is an instance method, meaning that
+	    MyPkg::L10N::en->maketext does not work anymore.
+	12. Instance lexicon is initialized in the new method.  I
+	    almost forgot it.  Thanks to the test suite. :p
 
-2003-04-25
+2003-04-25	version 0.02
+	Class/object design fixes.
+	 1. I did tell the difference from class variables to
+	    instance variables.  Forgive me, I had no experience
+	    with object-oriented programming at all, not even OO for
+	    perl. :p  Just a few Java books.  Anyway, the problem
+	    with clashing class variables is fixed.  Most class
+	    variables are moved into instance variables.
+	 2. Solved the default output encoding problem by using the
+	    encoding of the MO file as the default encoding.
+	 3. reload_text method is added to purge the MO file cache,
+	    so that applications do not need to be restarted when
+	    their MO file updates.
+         4. MO files of different byte orders are supported now.
+	    Big-endian MO files support is added.
+	 5. die_for_lookup_failures method was added.  The default
+	    behavior changed to "never fails", as GNU gettext does.
+	 6. A test suite is added.
 
-        o Release 0.01
+2003-04-24	version 0.01

@@ -1,4 +1,4 @@
-# Locale::Maketext::Gettext - bridge gettext to Locale::Maketext
+# Locale::Maketext::Gettext - bridge Maketext to gettext
 
 # Copyright (c) 2003 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.02;
+$VERSION = 0.03;
 @EXPORT = qw(readmo);
 @EXPORT_OK = @EXPORT;
 
@@ -26,8 +26,11 @@ $MOFILE = "";
 # encoding: Set or retrieve the encoding
 sub encoding {
     local ($_, %_);
-    my ($self, $new_enc, $pkg);
+    my ($self, $new_enc);
     ($self, $new_enc) = @_;
+    
+    # This is not a static method
+    return if ref($self) eq "";
     
     # Return the current encoding
     return $self->{"CUR_ENC"} if !defined $new_enc;
@@ -36,23 +39,24 @@ sub encoding {
     return ($self->{"CUR_ENC"} = $new_enc);
 }
 
-# Sorry for Sean... :p
+# Sorry for Sean... :p  I have to initialize several variables
 sub new {
-    my ($self, $pkg);
+    my ($self, $class);
     # Nothing fancy!
-    $pkg = ref($_[0]) || $_[0];
-    $self = bless {}, $pkg;
+    $class = ref($_[0]) || $_[0];
+    $self = bless {}, $class;
     
+    # Initialize the instance lexicon
+    $self->{"Lexicon"} = {};
     # Initialize the LOCALEDIRS registry
-    $self->{"LOCALEDIRS"} = { };
+    $self->{"LOCALEDIRS"} = {};
     # Initialize the MO timestamp
     $self->{"REREAD_MO"} = $REREAD_MO;
-    # Initialize the DIE_FOR_LOOKUP_FAILURES value
+    # Initialize the DIE_FOR_LOOKUP_FAILURES setting
     $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
-    ${"$pkg\::Lexicon"}{"_AUTO"} = 1;
     # Initialize the MOFILE value of this instance
     $self->{"MOFILE"} = "";
-    ${"$pkg\::MOFILE"} = "" if !defined ${"$pkg\::MOFILE"};
+    ${"$class\::MOFILE"} = "" if !defined ${"$class\::MOFILE"};
     
     $self->init;
     return $self;
@@ -61,84 +65,89 @@ sub new {
 # bindtextdomain: Bind a text domain to a locale directory
 sub bindtextdomain {
     local ($_, %_);
-    my ($self, $DOMAIN, $LOCALEDIR, $pkg);
+    my ($self, $DOMAIN, $LOCALEDIR);
     ($self, $DOMAIN, $LOCALEDIR) = @_;
     
-    # Initialize the registry
-    $self->{"LOCALEDIRS"} = { } if !defined $self->{"LOCALEDIRS"};
+    # This is not a static method
+    return if ref($self) eq "";
     
     # Return null for this rare case
     return if   !defined $LOCALEDIR
                 && !exists ${$self->{"LOCALEDIRS"}}{$DOMAIN};
     
+    # Register the DOMAIN and its LOCALEDIR
     ${$self->{"LOCALEDIRS"}}{$DOMAIN} = $LOCALEDIR if defined $LOCALEDIR;
+    
+    # Return the registry
     return ${$self->{"LOCALEDIRS"}}{$DOMAIN};
 }
 
 # textdomain: Set the current text domain
 sub textdomain {
     local ($_, %_);
-    my ($self, $DOMAIN, $pkg, $file, %lex);
+    my ($self, $class, $DOMAIN, $file);
     ($self, $DOMAIN) = @_;
     
-    # Find the caller package name
-    $pkg = ref($self);
+    # This is not a static method
+    return if ref($self) eq "";
+    # Find the class name
+    $class = ref($self);
     
     # Return the current domain
     return $self->{"CUR_DOMAIN"} if !defined $DOMAIN;
     
     # Set the timestamp of this read in this instance
     $self->{"REREAD_MO"} = $REREAD_MO;
-    
     # Set the current domain
     $self->{"CUR_DOMAIN"} = $DOMAIN;
     
     # Find the locale name, for this subclass
     if (!defined $self->{"LOCALE"}) {
-        $self->{"LOCALE"} = $pkg;
+        $self->{"LOCALE"} = $class;
         $self->{"LOCALE"} =~ s/^.*:://;
         $self->{"LOCALE"} =~ s/(_)(.*)$/$1 . uc $2/e;
     }
     
     # Clear it
     $self->{"Lexicon"} = {};
-    %{"$pkg\::Lexicon"} = qw();
-    ${"$pkg\::Lexicon"}{"_AUTO"} = 1 unless $self->{"DIE_FOR_LOOKUP_FAILURES"};
+    %{"$class\::Lexicon"} = qw();
+    $self->{"MOFILE"} = "";
+    ${"$class\::MOFILE"} = "";
     
     # Return if this domain was not binded yet
     return $DOMAIN if !exists ${$self->{"LOCALEDIRS"}}{$DOMAIN};
     
-    # import the PO files
+    # Import the PO files
     # The format is "{LOCALEDIR}/{LANG}/LC_MESSAGES/{DOMAIN}.mo"
     # The category is always LC_MESSAGES.  I'm not planning to change it
     $file = catfile(${$self->{"LOCALEDIRS"}}{$DOMAIN}, $self->{"LOCALE"}, "LC_MESSAGES", "$DOMAIN.mo");
     # Record it
-    ${"$pkg\::MOFILE"} = $file;
+    ${"$class\::MOFILE"} = $file;
     $self->{"MOFILE"} = $file;
-    # Avoid avoid being stupid
-    return $DOMAIN unless -f $file;
     
     # Read the MO file
     ($_, %_) = readmo($file);
     # Keep the current encoding
     $self->{"CUR_ENC"} = $_ if !defined $self->{"CUR_ENC"};
     $self->{"Lexicon"} = \%_;
-    %{"$pkg\::Lexicon"} = %_;
-    ${"$pkg\::Lexicon"}{"_AUTO"} = 1 unless $self->{"DIE_FOR_LOOKUP_FAILURES"};
-    
+    %{"$class\::Lexicon"} = %_;
+     
     return $DOMAIN;
 }
 
 # maketext: Encode after maketext
 sub maketext {
     local ($_, %_);
-    my ($self, $key, @param, $pkg);
+    my ($self, $key, @param, $class);
     ($self, $key, @param) = @_;
     
-    # Find the caller package name
-    $pkg = ref($self);
+    # This is not a static method -- NOW
+    # Sorry to Sean for this
+    return if ref($self) eq "";
+    # Find the class name
+    $class = ref($self);
     
-    # MO file should be ret-read
+    # MO file should be re-read
     if ($self->{"REREAD_MO"} < $REREAD_MO) {
         $self->{"REREAD_MO"} = $REREAD_MO;
         defined($_ = $self->textdomain) and $self->textdomain($_);
@@ -152,16 +161,23 @@ sub maketext {
     #   possible.
     # Maketext uses class lexicon in order to track the inheritance.
     #   This is not changable.
-    if (${"$pkg\::MOFILE"} ne $self->{"MOFILE"}) {
-        ${"$pkg\::MOFILE"} = $self->{"MOFILE"};
-        %{"$pkg\::Lexicon"} = %{$self->{"Lexicon"}};
-        ${"$pkg\::Lexicon"}{"_AUTO"} = 1
+    # Also check if DIE_FOR_LOOKUP_FAILURES has the same value as,
+    #   _AUTO, since this affects if the 2 lexicons are identical,
+    #   too.  Maketext caches the compiled result in the same class
+    #   lexicon.  A simply delete is not enough to clear the cache.
+    if (    ${"$class\::MOFILE"} ne $self->{"MOFILE"} ||
+            (!$self->{"DIE_FOR_LOOKUP_FAILURES"} xor
+            (exists ${"$class\::Lexicon"}{"_AUTO"} && ${"$class\::Lexicon"}{"_AUTO"}))) {
+        ${"$class\::MOFILE"} = $self->{"MOFILE"};
+        %{"$class\::Lexicon"} = %{$self->{"Lexicon"}};
+        ${"$class\::Lexicon"}{"_AUTO"} = 1
             unless $self->{"DIE_FOR_LOOKUP_FAILURES"};
     }
     
     # Strange that I have to do this.  If maketext is called before
     # setting textdomain, all the following maketext calls fails
-    exists ${"$pkg\::Lexicon"}{$key};
+    exists ${"$class\::Lexicon"}{$key};
+    ${"$class\::Lexicon"}{"_"} = 1;
     $_ = $self->SUPER::maketext($key, @param);
     $_ = encode($self->{"CUR_ENC"}, $_, FB_CROAK)
         if defined $self->{"CUR_ENC"};
@@ -180,9 +196,11 @@ sub readmo {
     return ($ENCODINGS{$MOfile}, %{$Lexicons{$MOfile}})
         if exists $ENCODINGS{$MOfile} && exists $Lexicons{$MOfile};
     
+    # Avild being stupid
+    return unless -f $MOfile && -r $MOfile;
     # Read the MO file
     $len = (stat $MOfile)[7];
-    open $FH, $MOfile   or return;  # GNU gettext never get wrong! ^_*'
+    open $FH, $MOfile   or return;  # GNU gettext never fails! ^_*'
     binmode $FH;
     defined($_ = read $FH, $content, $len)
                         or return;
@@ -251,8 +269,6 @@ sub readmo {
 # reload_text: Method to purge the lexicon cache
 sub reload_text {
     local ($_, %_);
-    my ($self);
-    $self = $_[0];
     
     # Purge the text cache
     %Lexicons = qw();
@@ -266,23 +282,22 @@ sub reload_text {
 # The default is no.  GNU gettext never fails.
 sub die_for_lookup_failures {
     local ($_, %_);
-    my ($self, $is_die, $pkg);
+    my ($self, $is_die, $class);
     ($self, $is_die) = @_;
     
-    # Find the caller package name
-    $pkg = ref($self);
+    # This is not a static method
+    return if ref($self) eq "";
+    # Find the class name
+    $class = ref($self);
     
     # Return the current setting
     return $self->{"DIE_FOR_LOOKUP_FAILURES"} if !defined $is_die;
     
-    $self->{"LOCALE"} = $pkg;
     # Set to yes
     if ($is_die) {
-        delete ${"$pkg\::Lexicon"}{"_AUTO"};
         return ($self->{"DIE_FOR_LOOKUP_FAILURES"} = 1);
     # Set to no.  GNU gettext never fails.
     } else {
-        ${"$pkg\::Lexicon"}{"_AUTO"} = 1;
         return ($self->{"DIE_FOR_LOOKUP_FAILURES"} = 0);
     }
 }
@@ -293,7 +308,7 @@ __END__
 
 =head1 NAME
 
-Locale::Maketext::Gettext - brings gettext and Maketext together
+Locale::Maketext::Gettext - bridge Maketext to gettext
 
 =head1 SYNOPSIS
 
@@ -310,6 +325,20 @@ In your application:
   $LH->bindtextdomain("mypackage", "/home/user/locale");
   $LH->textdomain("mypackage");
   $LH->maketext("Hello, world!!");
+
+If you want to have more control to the detail:
+
+  # Change the output encoding
+  $LH->encoding("UTF-8");
+  # Stick with the Maketext behavior on lookup failures
+  $LH->die_for_lookup_failures(1);
+  # Flush the MO file cache and re-read your updated MO files
+  $LH->reload_text;
+
+Use Locale::Maketext::Gettext to read and parse the MO file:
+
+  use Locale::Maketext::Gettext;
+  ($encoding, %Lexicon) = readmo($MOfile);
 
 =head1 DESCRIPTION
 
@@ -342,15 +371,6 @@ omitted, the registered locale directory of C<DOMAIN> is returned.
 If C<DOMAIN> is not even registered yet, returns C<undef>.  This
 method always success.
 
-Don't do $LH-E<gt>bindtextdomain(DOMAIN, $LH-E<gt>bindtextdomain) on
-an unregistered domain.  This is an infinite loop, and I'm not
-planning to fix it, in order to conform to the GNU gettext behavior.
-You should always use
-
-defined($_ = $LH-E<gt>bindtextdomain(DOMAIN)) and $LH-E<gt>bindtextdomain(DOMAIN, $_)
-
-instead.
-
 =item $LH->textdomain(DOMAIN)
 
 Set the current text domain.  It reads the corresponding MO file
@@ -361,15 +381,6 @@ becomes empty.  Returns the C<DOMAIN> itself.  If C<DOMAIN> is
 omitted, the current text domain is returned.  If the current text
 domain is not even set yet, returns C<undef>.  This method always
 success.
-
-Don't do $LH-E<gt>textdomain($LH-E<gt>textdomain) before your text
-domain is set.  This is an infinite loop, and I'm not planning to fix
-it, in order to conform to the GNU gettext behavior.  You should
-always use
-
-defined($_ = $LH-E<gt>textdomain(DOMAIN)) and $LH-E<gt>textdomain(DOMAIN, $_)
-
-instead.
 
 =item $LH->language_tag
 
@@ -385,7 +396,7 @@ practice of L<Locale::Maketext(3)|Locale::Maketext/3>.
 
 B<WARNING:>  You should always trust the encoding in the gettext
 MO file.  GNU gettext C<msgfmt> will check the illegal characters for
-you when you compile your MO file fro your PO file.  If you try to
+you when you compile your MO file from your PO file.  If you try to
 output to an wrong encoding, C<maketext> will C<die> for illegal
 characters in your text.  For example, try to turn Chinese text into
 US-ASCII.  If you DO need to output to a different encoding, use the
@@ -402,7 +413,18 @@ solution for this in the future, but not now.
 
 The same method in L<Locale::Maketext(3)|Locale::Maketext/3>, with
 a wrapper that return the text string C<encode>d according to the
-current C<encoding>.
+current C<encoding>.  Refer to
+L<Locale::Maketext(3)|Locale::Maketext/3> for its details.
+
+B<NOTICE:> The C<maketext> method is no more static, meaning that
+I<you cannot use MyPackage::L10N::en-E<gt>maketext(...) anymore.>
+That is a sure result, as %Lexicon is imported from the foreign
+source dynamically, but not statically hardcoded in a perl subclass.
+But the documentation of L<Locale::Maketext(3)|Locale::Maketext/3>
+does not say that you can use it as a static method anyway.  Maybe
+you were practicing this before.  You had better check your existing
+code for this.  If you try to invoke it statically, it returns
+C<undef>.
 
 =item $LH->die_for_lookup_failures(SHOULD_I_DIE)
 

@@ -7,7 +7,9 @@ framework as GNU gettext, especially for the completeness and
 simplicity of its design.
 
 Thanks for Autrijus Tang for writing Locale::Maketext::Lexicon.
-It inspires me to import %Lexicon from other sources.
+It inspires me to import %Lexicon from other sources.  Also
+thanks for approving such a project that is a contrary to his
+own Locale::Maketext::Lexicon. :p
 
 Finally, well, :p thanks to Larry Wall, for writing such a
 great programming language, as perl.
