@@ -1,5 +1,18 @@
 Locale-Maketext-Gettext change log
 
+2003-05-02
+	 1. Support for MO files without encoding specified was
+	    added.  I don't know there are MO files born without
+	    its encoding. ^^;
+	 2. L::M::G::F:  textdomain now works for default system
+	    locale directories, too.  For domains that are not
+	    binded with bindtextdomain, it searches the system
+	    locale directories to find the domain MO files.
+	    Unlike textdomain in L::M::G, it remembers the search
+	    result in order to build the index key.
+	 3. Tests for default system locale directory search are
+	    added.  It may be skipped, though.
+
 2003-05-02	version 1.03
 	 1. L::M::G:  A algorism bug about key_encoding with
 	    auto-lexicon was fixed.

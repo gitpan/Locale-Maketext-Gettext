@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 21 }
+BEGIN { plan tests => 25 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir);
@@ -18,6 +18,7 @@ use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # When something goes wrong
+use vars qw($dir $domain $lang $skip);
 # GNU gettext never fails!
 # bindtextdomain
 eval {
@@ -133,7 +134,7 @@ ok($@, qr/maketext doesn't know how to say/);
 eval {
     require T_L10N;
     $_ = T_L10N->get_handle("zh-tw");
-    $_->bindtextdomain("test", "/dev/null");
+    $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->key_encoding("Big5");
     $_ = $_->maketext("（未設定）");
@@ -141,6 +142,19 @@ eval {
 # 18
 ok($@, "");
 # 19
+ok($_, "（未設定）");
+
+eval {
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
+    $_->bindtextdomain("test", "/dev/null");
+    $_->textdomain("test");
+    $_->key_encoding("Big5");
+    $_ = $_->maketext("（未設定）");
+};
+# 20
+ok($@, "");
+# 21
 ok($_, "（未設定）");
 
 # Call maketext before and after binding text domain
@@ -152,7 +166,36 @@ eval {
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
 };
-# 20
+# 22
 ok($@, "");
-# 21
+# 23
 ok($_, "Hiya :)");
+
+# Search system locale directories
+use Locale::Maketext::Gettext;
+undef $domain;
+foreach $dir (@Locale::Maketext::Gettext::SYSTEM_LOCALEDIRS) {
+    next unless -d $dir;
+    @_ = glob "$dir/zh_TW/LC_MESSAGES/*.mo";
+    @_ = glob "$dir/zh_CN/LC_MESSAGES/*.mo" if scalar(@_) == 0;
+    next if scalar(@_) == 0;
+    $_ = $_[0];
+    /^\Q$dir\E\/(.+?)\/LC_MESSAGES\/(.+?)\.mo$/;
+    ($domain, $lang) = ($2, $1);
+    $lang = lc $lang;
+    $lang =~ s/_/-/g;
+    last;
+}
+$skip = defined $domain? 0: 1;
+if (!$skip) {
+    eval {
+        require T_L10N;
+        $_ = T_L10N->get_handle($lang);
+        $_->textdomain($domain);
+        $_ = $_->maketext("");
+    };
+}
+# 24
+skip($skip, $@, "");
+# 25
+skip($skip, $_, qr/Project-Id-Version:/);

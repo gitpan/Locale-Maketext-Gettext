@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.09;
+$VERSION = 0.10;
 @EXPORT = qw(read_mo readmo);
 @EXPORT_OK = @EXPORT;
 
@@ -186,8 +186,12 @@ sub textdomain {
         if (scalar(keys %_) > 0) {
             # Decode it
             # Find the encoding of that MO file
-            $_{""} =~ /^Content-Type: text\/plain; charset=(.*)$/im;
-            $enc = $1;
+            if ($_{""} =~ /^Content-Type: text\/plain; charset=(.*)$/im) {
+                $enc = $1;
+            # Default to US-ASCII
+            } else {
+                $enc = "US-ASCII";
+            }
             # Set the current encoding to the encoding of the MO file
             $_{$_} = decode($enc, $_{$_}) foreach keys %_;
         }
@@ -673,8 +677,10 @@ Chinese conversion, as GNU gettext smartly does, do it yourself with
 L<Encode::HanExtra(3)|Encode::HanExtra/3>, too.  There may be a
 solution for this in the future, but not now.
 
-The current system locale directory search order for C<textdomain>
-is: /usr/share/locale, /usr/lib/locale, /usr/local/share/locale,
+If you set C<textdomain> to a domain that is not C<bindtextdomain> to
+specific a locale directory yet, it will try search system locale
+directories.  The current system locale directory search order is:
+/usr/share/locale, /usr/lib/locale, /usr/local/share/locale,
 /usr/local/lib/locale.  Suggestions for this search order are
 welcome.
 

@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.04;
+$VERSION = 0.05;
 @EXPORT = qw();
 push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
@@ -22,6 +22,7 @@ use File::Spec::Functions qw(catdir catfile);
 use Locale::Maketext::Gettext qw(read_mo);
 use vars qw(%LOCALEDIRS %RIDS %CLASSES %LANGS);
 use vars qw(%LHS $_AUTO $_EMPTY $LH $FLH $DOMAIN $CATEGORY $CLASSBASE @LANGS);
+use vars qw(@SYSTEM_LOCALEDIRS);
 use vars qw($ENCODING $KEY_ENCODING $ENCODE_FAILURE $DIE_FOR_LOOKUP_FAILURES);
 %LHS = qw();
 # The internal auto/empty lexicons from Locale::Maketext::Gettext
@@ -33,6 +34,7 @@ $CATEGORY = "LC_MESSAGES";
 $CLASSBASE = "Locale::Maketext::Gettext::_runtime";
 # Current language parameters
 @LANGS = qw();
+@SYSTEM_LOCALEDIRS = @Locale::Maketext::Gettext::SYSTEM_LOCALEDIRS;
 $ENCODE_FAILURE = FB_DEFAULT;
 $DIE_FOR_LOOKUP_FAILURES = 0;
 # Parameters for random class IDs
@@ -229,46 +231,41 @@ sub _catclass {
 # _init_textdomain: Initialize a text domain
 sub _init_textdomain {
     local ($_, %_);
-    my ($domain, $k, $MOfile, @langs, $langs);
+    my ($domain, $k, @langs, $langs);
     $domain = $_[0];
     
-    # Return if text domain not specified, or not binded yet
-    return if !defined $domain || !exists $LOCALEDIRS{$domain};
-    # Obtain the registry key
-    $k = _k($domain);
+    # Return if text domain not specified yet
+    return if !defined $domain;
     
     # Obtain the available locales
-    {
-        my ($DH, $entry);
+    # A binded domain
+    if (exists $LOCALEDIRS{$domain}) {
+        @langs = _get_langs($LOCALEDIRS{$domain}, $domain);
+    # Not binded
+    } else {
         @langs = qw();
-        opendir $DH, $LOCALEDIRS{$domain}   or last;
-        while (defined($entry = readdir $DH)) {
-            # Skip hidden entries
-            next if $entry =~ /^\./;
-            # Skip non-directories
-            next unless -d catdir($LOCALEDIRS{$domain}, $entry);
-            # Skip locales with dot "." (trailing encoding)
-            next if $entry =~ /\./;
-            # Get the MO file name
-            $MOfile = catfile($LOCALEDIRS{$domain}, $entry,
-                $CATEGORY, "$domain.mo");
-            # Skip if MO file is not available for this locale
-            next if ! -f $MOfile && ! -r $MOfile;
-            # Map C to i_default
-            $entry = "i_default" if $entry eq "C";
-            # Add this language
-            push @langs, lc $entry;
+        # Search the system locale directories
+        foreach (@SYSTEM_LOCALEDIRS) {
+            @langs = _get_langs($_, $domain);
+            # Domain not found in this directory
+            next if scalar(@langs) == 0;
+            $LOCALEDIRS{$domain} = $_;
+            last;
         }
-        close $DH                           or last;
+        # Not found at last
+        return if !exists $LOCALEDIRS{$domain};
     }
     $langs = join ",", sort @langs;
     
+    # Obtain the registry key
+    $k = _k($domain);
+    
     # Available language list remains for this domain
     return if exists $LANGS{$k} && $LANGS{$k} eq $langs;
-    
-    my ($rid, $class);
     # Register this new language list
     $LANGS{$k} = $langs;
+    
+    my ($rid, $class);
     # Garbage collection - drop abandoned language handles
     if (exists $CLASSES{$k}) {
         delete $LHS{$_} foreach grep /^$CLASSES{$k}/, keys %LHS;
@@ -286,6 +283,36 @@ sub _init_textdomain {
         foreach @langs;
     
     return;
+}
+
+# _get_langs: Search a locale directory and return the available languages
+sub _get_langs {
+    local ($_, %_);
+    my ($dir, $domain, $DH, $entry, $MOfile);
+    ($dir, $domain) = @_;
+    
+    @_ = qw();
+    {
+        opendir $DH, $dir   or last;
+        while (defined($entry = readdir $DH)) {
+            # Skip hidden entries
+            next if $entry =~ /^\./;
+            # Skip non-directories
+            next unless -d catdir($dir, $entry);
+            # Skip locales with dot "." (trailing encoding)
+            next if $entry =~ /\./;
+            # Get the MO file name
+            $MOfile = catfile($dir, $entry, $CATEGORY, "$domain.mo");
+            # Skip if MO file is not available for this locale
+            next if ! -f $MOfile && ! -r $MOfile;
+            # Map C to i_default
+            $entry = "i_default" if $entry eq "C";
+            # Add this language
+            push @_, lc $entry;
+        }
+        close $DH           or last;
+    }
+    return @_;
 }
 
 # _get_handle: Set the language handle with the current DOMAIN and @LANGS
@@ -522,6 +549,13 @@ L<Locale::Maketext(3)|Locale::Maketext/3>).
 Language addition/removal takes effect only after C<bindtextdomain>
 or C<textdomain> is called.  It has no effect on C<maketext> calls.
 This keeps a basic sanity in the lifetime of a running script.
+
+If you set C<textdomain> to a domain that is not C<bindtextdomain> to
+specific a locale directory yet, it will try search system locale
+directories.  The current system locale directory search order is:
+/usr/share/locale, /usr/lib/locale, /usr/local/share/locale,
+/usr/local/lib/locale.  Suggestions for this search order are
+welcome.
 
 =head1 STORY
 
