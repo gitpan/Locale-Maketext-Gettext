@@ -1,5 +1,22 @@
 Locale-Maketext-Gettext change log
 
+2003-04-27	version 0.05
+	Bug and documentation fixes.
+	 1. New method key_encoding was added.  The _AUTO lexicon is
+	    itself not multibyte-safe.  You can specify the encoding
+	    of your keys if you are using non-ASCII keys.  This is
+	    not a solution, but a workaround.
+	 2. New method encode_failure was added.  The default action
+	    when encode fails changed from FB_CROAK to FB_DEFAULT.
+	    I have changed my mind.  GNU gettext never fails.
+	 3. The paragraph about Locale::Maketext::Lexicon at the
+	    NOTES section in the documentation is updated.  The
+	    paragraph about msgunfmt is removed.
+	 4. The README file was updated.
+	 5. The strange line "exists ${"$class\::Lexicon"}{$key};" is
+	    removed.  That problem seems to be solved.  It is not
+	    required anymore.
+
 2003-04-25	version 0.04
 	Documentation fixes.  Upgrade is not required if you are
 	using version 0.03.

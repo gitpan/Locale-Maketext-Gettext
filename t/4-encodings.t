@@ -9,9 +9,10 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 22 }
+BEGIN { plan tests => 27 }
 
-use FindBin;
+use Encode qw();
+use FindBin qw();
 use File::Spec::Functions qw(catdir);
 use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
@@ -170,3 +171,46 @@ eval {
 ok($@, "");
 # 22
 ok($_, "大家好。");
+
+# Encode failure
+# FB_DEFAULT
+eval {
+    require TestPkg::L10N;
+    $_ = TestPkg::L10N->get_handle("zh-tw");
+    $_->bindtextdomain("test2", $LOCALEDIR);
+    $_->textdomain("test2");
+    $_->encoding("GB2312");
+    $_ = $_->maketext("Every story has a happy ending.");
+};
+# 23
+ok($@, "");
+# 24
+ok($_, "故事都有美?的?局。");
+
+# FB_CROAK
+eval {
+    require TestPkg::L10N;
+    $_ = TestPkg::L10N->get_handle("zh-tw");
+    $_->bindtextdomain("test2", $LOCALEDIR);
+    $_->textdomain("test2");
+    $_->encoding("GB2312");
+    $_->encode_failure(Encode::FB_CROAK);
+    $_ = $_->maketext("Every story has a happy ending.");
+};
+# 25
+ok($@, qr/does not map to/);
+
+# FB_HTMLCREF
+eval {
+    require TestPkg::L10N;
+    $_ = TestPkg::L10N->get_handle("zh-tw");
+    $_->bindtextdomain("test2", $LOCALEDIR);
+    $_->textdomain("test2");
+    $_->encoding("GB2312");
+    $_->encode_failure(Encode::FB_HTMLCREF);
+    $_ = $_->maketext("Every story has a happy ending.");
+};
+# 26
+ok($@, "");
+# 27
+ok($_, "故事都有美&#40599;的&#32080;局。");

@@ -11,15 +11,15 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.04;
+$VERSION = 0.05;
 @EXPORT = qw(readmo);
 @EXPORT_OK = @EXPORT;
 
-use Encode qw(encode decode FB_CROAK);
+use Encode qw(encode decode FB_DEFAULT);
 use File::Spec::Functions qw(catfile);
 no strict qw(refs);
 
-use vars qw(%Lexicons %ENCODINGS $REREAD_MO $MOFILE $DIE_FOR_LOOKUP_FAILURES);
+use vars qw(%Lexicons %ENCODINGS $REREAD_MO $MOFILE);
 $REREAD_MO = 0;
 $MOFILE = "";
 
@@ -33,10 +33,26 @@ sub encoding {
     return if ref($self) eq "";
     
     # Return the current encoding
-    return $self->{"CUR_ENC"} if !defined $new_enc;
+    return $self->{"ENCODING"} if !defined $new_enc;
     
     # Set the current encoding
-    return ($self->{"CUR_ENC"} = $new_enc);
+    return ($self->{"ENCODING"} = $new_enc);
+}
+
+# key_encoding: Specify the encoding used in the keys
+sub key_encoding {
+    local ($_, %_);
+    my ($self, $KEY_ENCODING);
+    ($self, $KEY_ENCODING) = @_;
+    
+    # This is not a static method
+    return if ref($self) eq "";
+    
+    # Specify the encoding used in the keys
+    $self->{"KEY_ENCODING"} = $KEY_ENCODING if defined $KEY_ENCODING;
+    
+    # Return the encoding
+    return $self->{"KEY_ENCODING"};
 }
 
 # Sorry for Sean... :p  I have to initialize several variables
@@ -54,6 +70,8 @@ sub new {
     $self->{"REREAD_MO"} = $REREAD_MO;
     # Initialize the DIE_FOR_LOOKUP_FAILURES setting
     $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
+    # Initialize the ENCODE_FAILURE setting
+    $self->{"ENCODE_FAILURE"} = FB_DEFAULT;
     # Initialize the MOFILE value of this instance
     $self->{"MOFILE"} = "";
     ${"$class\::MOFILE"} = "" if !defined ${"$class\::MOFILE"};
@@ -94,12 +112,12 @@ sub textdomain {
     $class = ref($self);
     
     # Return the current domain
-    return $self->{"CUR_DOMAIN"} if !defined $DOMAIN;
+    return $self->{"DOMAIN"} if !defined $DOMAIN;
     
     # Set the timestamp of this read in this instance
     $self->{"REREAD_MO"} = $REREAD_MO;
     # Set the current domain
-    $self->{"CUR_DOMAIN"} = $DOMAIN;
+    $self->{"DOMAIN"} = $DOMAIN;
     
     # Find the locale name, for this subclass
     if (!defined $self->{"LOCALE"}) {
@@ -128,7 +146,7 @@ sub textdomain {
     # Read the MO file
     ($_, %_) = readmo($file);
     # Keep the current encoding
-    $self->{"CUR_ENC"} = $_ if !defined $self->{"CUR_ENC"};
+    $self->{"ENCODING"} = $_ if !defined $self->{"ENCODING"};
     $self->{"Lexicon"} = \%_;
     %{"$class\::Lexicon"} = %_;
      
@@ -174,13 +192,15 @@ sub maketext {
             unless $self->{"DIE_FOR_LOOKUP_FAILURES"};
     }
     
-    # Strange that I have to do this.  If maketext is called before
-    # setting textdomain, all the following maketext calls fails
-    exists ${"$class\::Lexicon"}{$key};
-    ${"$class\::Lexicon"}{"_"} = 1;
+    # Decode the _AUTO lexicon first, in order for the _AUTO lexicon
+    #   to be multibyte-safe as possible.
+    $key = decode($self->{"KEY_ENCODING"}, $key, $self->{"ENCODE_FAILURE"})
+        if  !exists ${$self->{"Lexicon"}}{$key} &&
+            defined $self->{"KEY_ENCODING"};
+    
     $_ = $self->SUPER::maketext($key, @param);
-    $_ = encode($self->{"CUR_ENC"}, $_, FB_CROAK)
-        if defined $self->{"CUR_ENC"};
+    $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"})
+        if defined $self->{"ENCODING"};
     
     return $_;
 }
@@ -257,7 +277,7 @@ sub readmo {
     $_{""} =~ /^Content-Type: text\/plain; charset=(.*)$/im;
     $enc = $1;
     # Set the current encoding to the encoding of the MO file
-    $_{$_} = decode($enc, $_{$_}, FB_CROAK) foreach keys %_;
+    $_{$_} = decode($enc, $_{$_}) foreach keys %_;
     
     # Cache them
     $Lexicons{$MOfile} = \%_;
@@ -302,6 +322,23 @@ sub die_for_lookup_failures {
     }
 }
 
+# encode_failure: What to do if the text is out of your output encoding
+#   Refer to Encode on possible values of this check
+sub encode_failure {
+    local ($_, %_);
+    my ($self, $CHECK);
+    ($self, $CHECK) = @_;
+    
+    # This is not a static method
+    return if ref($self) eq "";
+    
+    # Specify the action used in the keys
+    $self->{"ENCODE_FAILURE"} = $CHECK if defined $CHECK;
+    
+    # Returns the encoding
+    return $self->{"ENCODE_FAILURE"};
+}
+
 return 1;
 
 __END__
@@ -334,6 +371,10 @@ If you want to have more control to the detail:
   $LH->die_for_lookup_failures(1);
   # Flush the MO file cache and re-read your updated MO files
   $LH->reload_text;
+  # Set the encoding of your maketext keys, if not in English
+  $LH->key_encoding("Big5");
+  # Set the action when encode fails
+  $LH->encode_failure(Encode::FB_HTMLCREF);
 
 Use Locale::Maketext::Gettext to read and parse the MO file:
 
@@ -395,20 +436,48 @@ encoding as the gettext MO file.  You should not override this method
 in your localization subclasses, as contract to the current
 practice of L<Locale::Maketext(3)|Locale::Maketext/3>.
 
-B<WARNING:>  You should always trust the encoding in the gettext
-MO file.  GNU gettext C<msgfmt> checks the illegal characters for you
-when you compile your MO file from your PO file.  If you try to
-output to an wrong encoding, C<maketext> will C<die> for illegal
-characters in your text.  For example, try to turn Chinese text into
-US-ASCII.  If you DO need to output to a different encoding, use the
-value of this method and C<from_to> from L<Encode(3)|Encode/3> to do
-your job.  I'm not planning to supply an option for this C<die>.
-So, change the output encoding at your own risk.
+You should trust the encoding of your gettext MO file.  GNU gettext
+C<msgfmt> checks the illegal characters for you when you compile your
+MO file from your PO file.  The encoding form your MO files are
+always good.
+
+If you try to output to a wrong encoding, part of your text may be
+lost, as C<FB_DEFAULT> does.  If you don't like this C<FB_DEFAULT>,
+change the failure behavior with the method C<encode_failure> below.
 
 If you need the behavior of auto Traditional Chinese/Simplfied
 Chinese conversion, as GNU gettext smartly does, do it yourself with
 the L<Encode::HanExtra(3)|Encode::HanExtra/3>, too.  There may be a
 solution for this in the future, but not now.
+
+=item $LH->encode_failure(CHECK)
+
+Set the action when encode fails.  This happens when the output text
+is out of the scope of your output encoding.  For exmaple, output
+Chinese into US-ASCII.  Refer to L<Encode(3)|Encode/3> for the
+possible values of this C<CHECK>.  The default is C<FB_DEFAULT>,
+which is a safe choice that never fails.  But part of your text may
+be lost, since that is what C<FB_DEFAULT> does.  Returns the current
+setting.
+
+=item $LH->key_encoding(ENCODING)
+
+Specify the encoding used in your original text.  The C<maketext>
+method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
+using your native non-English language as your original text and you
+are having troubles like:
+
+Unterminated bracket group, in:
+
+Then, specify the C<key_encoding> to the encoding of your original
+text.  Returns the current setting.
+
+This is a workaround, not a solution.  There is no solution to this
+problem yet.  You should avoid using non-English language as your
+original text.  You'll get yourself into trouble if you mix several
+original text encodings, for example, joining several pieces of code
+from programmers all around the world.  Solution suggestions are
+welcome.
 
 =item $text = $LH->maketext($key, @param...)
 
@@ -480,13 +549,13 @@ not stay in the current text domain.
 
 An essential benefit of this Locale::Maketext::Gettext over the
 original L<Locale::Maketext(3)|Locale::Maketext/3> is that: 
-I<GNU gettext is multibyte safe,> but perl source is not.  GNU
-gettext is safe to Big5 characters like \xa5\x5c (Gong1).  But if you
-follow the current L<Locale::Maketext(3)|Locale::Maketext/3> document
-and put your lexicon as a hash in a localization subclass, you have
-to escape bytes like \x5c, \x40, \x5b, etc., in the middle of some
-natural multibyte characters.  This breaks these characters in
-halves.  Your non-technical translators and reviewers will be
+I<GNU gettext is multibyte safe,> but perl source isn't.  GNU gettext
+is safe to Big5 characters like \xa5\x5c (Gong1).  But if you follow
+the current L<Locale::Maketext(3)|Locale::Maketext/3> document and
+put your lexicon as a hash in the source of a localization subclass,
+you have to escape bytes like \x5c, \x40, \x5b, etc., in the middle
+of some natural multibyte characters.  This breaks these characters
+in halves.  Your non-technical translators and reviewers will be
 presented with unreadable mess, "Luan4Ma3".  Sorry to say this, but
 it is weird for a localization framework to be not multibyte-safe.
 But, well, here comes Locale::Maketext::Gettext to rescue.  With
@@ -495,16 +564,12 @@ all this mess to the excellent GNU gettext framework. ^_*'
 
 The idea of Locale::Maketext::Getttext came from
 L<Locale::Maketext::Lexicon(3)|Locale::Maketext::Lexicon/3>, a great
-work by autrijus.  But it is simply not finished yet and not
-practically usable.  I was first trying to write a wrapper to fix it,
-but finally I decide to make a replacement.
-
-The part of calling F<msgunfmt> is removed.  The gettext MO file
-format is officially documented, so I decided to parse it by myself.
-It is not hard.  It reduces the overhead to raising a subshell.  It
-benefits from the fact that parsing binary files is much faster then
-parsing text files, since regular expressions are not involved.
-Also, after all, F<msgunfmt> is not portable on non-GNU systems.
+work by Autrijus.  But it has several problems at that time (version
+0.16).  I was first trying to write a wrapper to fix it, but finally
+I dropped it and decided to make a solution towards
+L<Locale::Maketext(3)|Locale::Maketext/3> itself.
+L<Locale::Maketext::Lexicon(3)|Locale::Maketext::Lexicon/3> should be
+fine now if you obtain a version newer than 0.16.
 
 Locale::Maketext::Gettext also solved the problem of lack of the
 ability to handle the encoding in
@@ -513,7 +578,7 @@ this is what GNU gettext does.  When %Lexicon is read from MO files
 by C<readmo()>, the encoding tagged in gettext MO files is used to
 C<decode> the text into perl's internal encoding.  Then, when
 extracted by C<maketext>, it is C<encode>d by the current
-C<encoding> value.  The C<encoding> can be changed at run time, so
+C<encoding> value.  The C<encoding> can be set at run time, so
 that you can run a daemon and output to different encoding
 according to the language settings of individual users, without
 having to restart the application.  This is an improvement to the
@@ -546,12 +611,13 @@ a single textdomain for a single localization class.
 
 =head1 BUGS
 
-All the problems I have noticed have been fixed.  You are welcome
-to submit new ones. ^_*'  Maybe a long-winded docmuentation is a
-bug, too. :p
+GNU gettext never fails.  I tries to achieve it as long as possible.
+The only reason that maketext may die unexpectedly now is
+"Unterminated bracket group".  I cannot get a better solution to it
+currently.  Suggestions are welcome.
 
-Please help me fix my English.  I tries to do my best to this
-documentation.  But, after all, I'm not a native English speaker. ^^;
+You are welcome to fix my English.  I have done my best to this
+documentation, but I'm not a native English speaker after all. ^^;
 
 =head1 SEE ALSO
 

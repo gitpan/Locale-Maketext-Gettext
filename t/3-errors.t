@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 17 }
+BEGIN { plan tests => 21 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir);
@@ -128,3 +128,31 @@ eval {
 };
 # 17
 ok($@, qr/maketext doesn't know how to say/);
+
+# multibyte keys
+eval {
+    require TestPkg::L10N;
+    $_ = TestPkg::L10N->get_handle("zh-tw");
+    $_->bindtextdomain("test", $LOCALEDIR);
+    $_->textdomain("test");
+    $_->key_encoding("Big5");
+    $_ = $_->maketext("（未設定）");
+};
+# 18
+ok($@, "");
+# 19
+ok($_, "（未設定）");
+
+# Call maketext before and after binding text domain
+eval {
+    require TestPkg::L10N;
+    $_ = TestPkg::L10N->get_handle("en");
+    $_->maketext("Hello, world!");
+    $_->bindtextdomain("test", $LOCALEDIR);
+    $_->textdomain("test");
+    $_ = $_->maketext("Hello, world!");
+};
+# 20
+ok($@, "");
+# 21
+ok($_, "Hiya :)");
