@@ -1,5 +1,18 @@
 Locale-Maketext-Gettext change log
 
+2003-05-05	version 1.07
+	Bug fixes.
+	 1. Fix to the interpreter line in the maketext script so
+	    that it can be replaced with correct interpreter at
+	    make time.
+	 2. 11-command-line.t:  script location changed from
+	    lib/maketext to blib/script/maketext.
+	 3. C locale is added to the test suite.
+	 4. 11-command-line.t:  Locales en, zh_TW, zh_CN are remove
+	    from the test suite, to avoid perl warnings from
+	    systems that did not install these locales.
+	 5. 11-command-line.t:  $ENV{"LANGUAGE"} controls added.
+
 2003-05-04	version 1.06
 	 1. Language function override is not available for
 	    L::M::G::F and the maketext script.  I almost forgot

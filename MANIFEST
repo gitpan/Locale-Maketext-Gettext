@@ -19,6 +19,7 @@ t/09-f-encodings.t
 t/10-f-switching.t
 t/11-command-line.t
 t/T_L10N.pm
+t/locale/C/LC_MESSAGES/test.mo
 t/locale/en/LC_MESSAGES/bad.mo
 t/locale/en/LC_MESSAGES/test.mo
 t/locale/en/LC_MESSAGES/test2.mo
