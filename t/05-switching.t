@@ -18,7 +18,9 @@ use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # Switching between different settings
+use File::Copy qw(copy);
 use vars qw($lh1 $lh2 $dir $f $f1 $f2);
+
 # 2 language handles of the same localization subclass
 eval {
     require T_L10N;
@@ -110,7 +112,7 @@ eval {
     $f1 = catfile($dir, "test.mo");
     $f2 = catfile($dir, "test2.mo");
     unlink $f;
-    link $f1, $f    or die "ERROR: $!";
+    copy $f1, $f    or die "ERROR: $f1 $f: $!";
     
     require T_L10N;
     $_ = T_L10N->get_handle("en");
@@ -119,7 +121,7 @@ eval {
     $_[0] = $_->maketext("Hello, world!");
     $_[1] = $_->maketext("Every story has a happy ending.");
     unlink $f;
-    link $f2, $f    or die "ERROR: $!";
+    copy $f2, $f    or die "ERROR: $f2 $f: $!";
     $_[2] = $_->maketext("Hello, world!");
     $_[3] = $_->maketext("Every story has a happy ending.");
     $_->reload_text;
@@ -142,3 +144,6 @@ ok($_[3], "Every story has a happy ending.");
 ok($_[4], "Hello, world!");
 # 25
 ok($_[5], "Pray it.");
+
+# Garbage collection
+unlink catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_reload.mo");

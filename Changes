@@ -1,6 +1,21 @@
 Locale-Maketext-Gettext change log
 
-2003-05-02
+2003-05-03	version 1.05
+	Test suites fixes.  This fixes the failures reported from
+	CPAN testers.  Failures reported from CPAN testers are
+	caused by Archive-Tar called by CPANPLUS, but not by
+	Locale::Maketext::Gettext itself.  Bug report concerning
+	this problem is already submitted to Archive-Tar.
+	 1. Test suite temporarily files test_dyn.mo are removed
+	    from MANIFEST.
+	 2. File::Copy is used instead of link in the test suites
+	    to enable tests on platforms that does not support
+	    hard links (Win32, for example).
+	 3. Temporarily files are cleaned up at the end of
+	    05-switching.t and 10-f-switching.t.
+	Upgrade is not required if you are using version 1.04.
+
+2003-05-02	version 1.04
 	 1. Support for MO files without encoding specified was
 	    added.  I don't know there are MO files born without
 	    its encoding. ^^;

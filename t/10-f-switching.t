@@ -18,7 +18,9 @@ use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # Switching between different settings
+use File::Copy qw(copy);
 use vars qw($dir1 $dir2 $dir3 $f1 $f11 $f12 $f2 $f21 $f3 $f31 $class);
+
 # dmaketext in the middle
 eval {
     use Locale::Maketext::Gettext::Functions;
@@ -227,7 +229,7 @@ eval {
     get_handle("zh-cn");
     $_[1] = __("Hello, world!");
     
-    link $f21, $f2  or die "ERROR: $f21 $f2: $!";
+    copy $f21, $f2  or die "ERROR: $f21 $f2: $!";
     textdomain("test_dyn");
     get_handle("zh-tw");
     $_[2] = __("Hello, world!");
@@ -235,14 +237,14 @@ eval {
     $_[3] = __("Hello, world!");
     
     unlink $f2;
-    link $f31, $f3  or die "ERROR: $f31 $f3: $!";
+    copy $f31, $f3  or die "ERROR: $f31 $f3: $!";
     textdomain("test_dyn");
     get_handle("zh-tw");
     $_[4] = __("Hello, world!");
     get_handle("zh-cn");
     $_[5] = __("Hello, world!");
     
-    link $f21, $f2  or die "ERROR: $f21 $f2: $!";
+    copy $f21, $f2  or die "ERROR: $f21 $f2: $!";
     textdomain("test_dyn");
     get_handle("zh-tw");
     $_[6] = __("Hello, world!");
@@ -256,6 +258,10 @@ eval {
     $_[8] = __("Hello, world!");
     get_handle("zh-cn");
     $_[9] = __("Hello, world!");
+    
+    unlink $f1;
+    unlink $f2;
+    unlink $f3;
 };
 # 38
 ok($@, "");
@@ -296,8 +302,8 @@ eval {
     unlink $f2;
     unlink $f3;
     
-    link $f11, $f1  or die "ERROR: $f11 $f1: $!";
-    link $f21, $f2  or die "ERROR: $f21 $f2: $!";
+    copy $f11, $f1  or die "ERROR: $f11 $f1: $!";
+    copy $f21, $f2  or die "ERROR: $f21 $f2: $!";
     textdomain("test_dyn");
     get_handle("en");
     get_handle("zh-tw");
@@ -306,7 +312,7 @@ eval {
     $class =~ s/^(.+)::.*?$/$1/;
     
     unlink $f2;
-    link $f31, $f3  or die "ERROR: $f31 $f3: $!";
+    copy $f31, $f3  or die "ERROR: $f31 $f3: $!";
     textdomain("test_dyn");
     get_handle("en");
     get_handle("zh-tw");
@@ -325,7 +331,7 @@ eval {
     $f11 = catfile($dir1, "test.mo");
     $f12 = catfile($dir1, "test2.mo");
     unlink $f1;
-    link $f11, $f1  or die "ERROR: $f11 $f1: $!";
+    copy $f11, $f1  or die "ERROR: $f11 $f1: $!";
     use Locale::Maketext::Gettext::Functions;
     bindtextdomain("test_reload", $LOCALEDIR);
     textdomain("test_reload");
@@ -333,7 +339,7 @@ eval {
     $_[0] = __("Hello, world!");
     $_[1] = __("Every story has a happy ending.");
     unlink $f1;
-    link $f12, $f1  or die "ERROR: $f12 $f1: $!";
+    copy $f12, $f1  or die "ERROR: $f12 $f1: $!";
     $_[2] = __("Hello, world!");
     $_[3] = __("Every story has a happy ending.");
     reload_text;
@@ -355,3 +361,9 @@ ok($_[3], "Every story has a happy ending.");
 ok($_[4], "Hello, world!");
 # 57
 ok($_[5], "Pray it.");
+
+# Garbage collection
+unlink catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_dyn.mo");
+unlink catfile($LOCALEDIR, "zh_TW", "LC_MESSAGES", "test_dyn.mo");
+unlink catfile($LOCALEDIR, "zh_CN", "LC_MESSAGES", "test_dyn.mo");
+unlink catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_reload.mo");
