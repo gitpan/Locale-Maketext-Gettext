@@ -11,9 +11,11 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.10;
-@EXPORT = qw(read_mo readmo);
+$VERSION = 0.11;
+@EXPORT = qw(read_mo);
 @EXPORT_OK = @EXPORT;
+# Prototype declaration
+sub read_mo($);
 
 use Encode qw(encode decode FB_DEFAULT);
 use File::Spec::Functions qw(catfile);
@@ -28,40 +30,45 @@ use vars qw(@SYSTEM_LOCALEDIRS);
 @SYSTEM_LOCALEDIRS = qw(/usr/share/locale /usr/lib/locale
     /usr/local/share/locale /usr/local/lib/locale);
 
-# encoding: Set or retrieve the encoding
-sub encoding {
+# encoding: Set or retrieve the output encoding
+sub encoding : method {
     local ($_, %_);
-    my ($self, $new_enc);
-    ($self, $new_enc) = @_;
+    my $self;
+    ($self, $_) = @_;
     
     # This is not a static method
     return if ref($self) eq "";
     
-    # Return the current encoding
-    return $self->{"ENCODING"} if !defined $new_enc;
+    # Set the output encoding
+    $self->{"ENCODING"} = $_ if @_ > 1;
     
-    # Set the current encoding
-    return ($self->{"ENCODING"} = $new_enc);
+    # Return the current encoding
+    return $self->{"ENCODING"} if exists $self->{"ENCODING"};
+    return undef;
 }
 
 # key_encoding: Specify the encoding used in the keys
-sub key_encoding {
+sub key_encoding : method {
     local ($_, %_);
-    my ($self, $KEY_ENCODING);
-    ($self, $KEY_ENCODING) = @_;
+    my $self;
+    ($self, $_) = @_;
     
     # This is not a static method
     return if ref($self) eq "";
     
-    # Specify the encoding used in the keys
-    $self->{"KEY_ENCODING"} = $KEY_ENCODING if defined $KEY_ENCODING;
+    # Set the encoding used in the keys
+    if (@_ > 1) {
+        $self->{"KEY_ENCODING"} = $_;
+        $self->{"ENCODING"} = $_ if !exists $self->{"ENCODING"};
+    }
     
     # Return the encoding
-    return $self->{"KEY_ENCODING"};
+    return $self->{"KEY_ENCODING"} if exists $self->{"KEY_ENCODING"};
+    return undef;
 }
 
-# Sorry for Sean... :p  I have to initialize several variables
-sub new {
+# new: Initialize the language handler
+sub new : method {
     local ($_, %_);
     my ($self, $class);
     $class = ref($_[0]) || $_[0];
@@ -73,7 +80,7 @@ sub new {
 
 # subclass_init: Initialize at the subclass level, so that it can be
 #                inherited by calling $self->SUPER:subclass_init
-sub subclass_init {
+sub subclass_init : method {
     local ($_, %_);
     my ($self, $class);
     $self = $_[0];
@@ -100,11 +107,13 @@ sub subclass_init {
     $self->{"LOCALE"} = "C" if $self->{"LOCALE"} eq "i_default";
     # Set the category.  Currently this is always LC_MESSAGES
     $self->{"CATEGORY"} = "LC_MESSAGES";
+    # Default key encoding is US-ASCII
+    $self->{"KEY_ENCODING"} = "US-ASCII";
     return;
 }
 
 # bindtextdomain: Bind a text domain to a locale directory
-sub bindtextdomain {
+sub bindtextdomain : method {
     local ($_, %_);
     my ($self, $DOMAIN, $LOCALEDIR);
     ($self, $DOMAIN, $LOCALEDIR) = @_;
@@ -124,7 +133,7 @@ sub bindtextdomain {
 }
 
 # textdomain: Set the current text domain
-sub textdomain {
+sub textdomain : method {
     local ($_, %_);
     my ($self, $class, $DOMAIN, $LOCALEDIR, $MOfile);
     ($self, $DOMAIN) = @_;
@@ -199,9 +208,10 @@ sub textdomain {
         $ENCODINGS{$MOfile} = $enc;
     }
     
-    # Respect the existing output encoding setting
-    $self->{"ENCODING"} = $ENCODINGS{$MOfile}
-        if !defined $self->{"ENCODING"};
+    # Respect the existing output encoding
+    $self->{"MO_ENCODING"} = $ENCODINGS{$MOfile};
+    $self->{"ENCODING"} = $self->{"MO_ENCODING"}
+        if !exists $self->{"ENCODING"} && defined $ENCODINGS{$MOfile};
     $self->{"Lexicon"} = $Lexicons{$MOfile};
     %{"$class\::Lexicon"} = %{$Lexicons{$MOfile}};
     
@@ -209,13 +219,12 @@ sub textdomain {
 }
 
 # maketext: Encode after maketext
-sub maketext {
+sub maketext : method {
     local ($_, %_);
     my ($self, $key, @param, $class);
     ($self, $key, @param) = @_;
     
     # This is not a static method -- NOW
-    # Sorry to Sean for this
     return if ref($self) eq "";
     # Find the class name
     $class = ref($self);
@@ -238,60 +247,37 @@ sub maketext {
         %{"$class\::Lexicon"} = %{$self->{"Lexicon"}};
     }
     
-    # Decode the _AUTO lexicon first, in order for the _AUTO lexicon
-    #   to be multibyte-safe as possible.
-    $key = decode($self->{"KEY_ENCODING"}, $key, $self->{"ENCODE_FAILURE"})
-        if defined $self->{"KEY_ENCODING"};
-    
     # Process with the _AUTO lexicon for lookup failures
     # Lookup failures
     if (!exists ${$self->{"Lexicon"}}{$key}) {
+        # Decode the _AUTO lexicon first, in order for the _AUTO lexicon
+        #   to be multibyte-safe as possible.
+        $key = decode($self->{"KEY_ENCODING"}, $key, $self->{"ENCODE_FAILURE"});
+        # Maketext
         $_ = $self->{"FLH"}->maketext($key, @param);
-        # Wrap the output encoding
-        if (defined $self->{"ENCODING"}) {
-            $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
-        # Turn back to the encoding of the source text
+        # Output to the requested encoding
+        if (exists $self->{"ENCODING"}) {
+            $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"})
+                if defined $self->{"ENCODING"};
+        # Return to the encoding of the source text
         } elsif (defined $self->{"KEY_ENCODING"}) {
             $_ = encode($self->{"KEY_ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
         }
     # Process with the ordinary maketext
     } else {
+        # Maketext
         $_ = $self->SUPER::maketext($key, @param);
-        # Encode with the output encoding
-        $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
+        # Output to the requested encoding
+        $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"})
+            if defined $self->{"ENCODING"};
     }
     
     return $_;
 }
 
-# readmo: Deprecated.  Please use read_mo() instead.
-sub readmo {
-    local ($_, %_);
-    my ($MOfile, $enc);
-    $MOfile = $_[0];
-    
-    # Deprecated
-    print STDERR "The use of readmo() is deprecated.  Use read_mo() instead.\n";
-    
-    # Read it
-    %_ = read_mo($MOfile);
-    
-    # Successfully read
-    if (scalar(keys %_) > 0) {
-        # Decode it
-        # Find the encoding of that MO file
-        $_{""} =~ /^Content-Type: text\/plain; charset=(.*)$/im;
-        $enc = $1;
-        # Set the output encoding to the encoding of the MO file
-        $_{$_} = decode($enc, $_{$_}) foreach keys %_;
-    }
-    
-    return ($enc, %_);
-}
-
 # read_mo: Subroutine to read and parse the MO file
 #          Refer to gettext documentation section 8.3
-sub read_mo {
+sub read_mo($) {
     local ($_, %_);
     my ($MOfile, $len, $FH, $content, $tmpl);
     $MOfile = $_[0];
@@ -356,7 +342,7 @@ sub read_mo {
 }
 
 # reload_text: Method to purge the lexicon cache
-sub reload_text {
+sub reload_text : method {
     local ($_, %_);
     
     # Purge the text cache
@@ -369,40 +355,47 @@ sub reload_text {
 
 # die_for_lookup_failures: Whether we should die for lookup failure
 #   The default is no.  GNU gettext never fails.
-sub die_for_lookup_failures {
+sub die_for_lookup_failures : method {
     local ($_, %_);
-    my ($self, $is_die);
-    ($self, $is_die) = @_;
+    my $self;
+    ($self, $_) = @_;
+    
     # This is not a static method
     return if ref($self) eq "";
-    # Return the current setting
-    return $self->{"DIE_FOR_LOOKUP_FAILURES"} if !defined $is_die;
+    
     # Set the current setting
-    if ($is_die) {
-        $self->{"FLH"} = $_EMPTY;
-    	$self->{"DIE_FOR_LOOKUP_FAILURES"} = 1;
-    } else {
-        $self->{"FLH"} = $_AUTO;
-    	$self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
+    if (@_ > 1) {
+        if ($_) {
+            $self->{"FLH"} = $_EMPTY;
+            $self->{"DIE_FOR_LOOKUP_FAILURES"} = 1;
+        } else {
+            $self->{"FLH"} = $_AUTO;
+            $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
+        }
     }
-    return $self->{"DIE_FOR_LOOKUP_FAILURES"};
+    
+    # Return the current setting
+    return $self->{"DIE_FOR_LOOKUP_FAILURES"}
+        if exists $self->{"DIE_FOR_LOOKUP_FAILURES"};
+    return undef;
 }
 
 # encode_failure: What to do if the text is out of your output encoding
 #   Refer to Encode on possible values of this check
-sub encode_failure {
+sub encode_failure : method {
     local ($_, %_);
-    my ($self, $CHECK);
-    ($self, $CHECK) = @_;
+    my $self;
+    ($self, $_) = @_;
     
     # This is not a static method
     return if ref($self) eq "";
     
     # Specify the action used in the keys
-    $self->{"ENCODE_FAILURE"} = $CHECK if defined $CHECK;
+    $self->{"ENCODE_FAILURE"} = $_ if @_ > 1;
     
     # Return the encoding
-    return $self->{"ENCODE_FAILURE"};
+    return $self->{"ENCODE_FAILURE"} if exists $self->{"ENCODE_FAILURE"};
+    return undef;
 }
 
 # Public _AUTO lexicon -- process auto lexicon with it, but not the _AUTO
@@ -535,9 +528,8 @@ L<Locale::Maketext(3)|Locale::Maketext/3>.  It is readonly.
 =item $LH->encoding(ENCODING)
 
 Set or retrieve the output encoding.  The default is the same
-encoding as the gettext MO file.  You should not override this
-method, as contract to the current practice of
-L<Locale::Maketext(3)|Locale::Maketext/3>.
+encoding as the gettext MO file.  You can specify C<undef>, to return
+the result in unencoded UTF-8.
 
 =item $LH->key_encoding(ENCODING)
 
@@ -550,6 +542,10 @@ Unterminated bracket group, in:
 
 Then, specify the C<key_encoding> to the encoding of your original
 text.  Returns the current setting.
+
+B<WARNING:> You should always use US-ASCII text keys.  Using
+non-US-ASCII keys is always discouraged and is not guaranteed to
+be working.
 
 =item $LH->encode_failure(CHECK)
 
@@ -601,19 +597,6 @@ C<read_mo()> is exported by default, but you need to C<use
 Locale::Maketext::Gettext> in order to use it.  It is not exported
 from your localization class, but from the Locale::Maketext::Gettext
 package.
-
-=item ($encoding, %Lexicon) = readmo($MOfile);
-
-(deprecated) Read and parse the MO file.  Returns a suggested default
-encoding and %Lexicon.  The suggested encoding is the encoding of the
-MO file itself.  The %Lexicon is returned in perl's internal
-encoding.
-
-This method is deprecated and will be removed in the future.  use
-C<read_mo()> instead.  There are far too many meta infomation to be
-returned other than its C<encoding>.  It's not possible to change the
-API for each new requirement.  See C<read_mo()> above for how to
-parse the meta infomation by yourself.
 
 =back
 

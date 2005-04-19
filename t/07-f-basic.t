@@ -16,11 +16,15 @@ use File::Spec::Functions qw(catdir catfile);
 use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
+delete $ENV{$_}
+    foreach qw(LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES LC_NUMERIC
+                LC_MONETARY LC_TIME LANG);
 
 # Basic test suite
 # bindtextdomain
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     $_ = bindtextdomain("test", $LOCALEDIR);
 };
 # 1
@@ -31,6 +35,7 @@ ok($_, $LOCALEDIR);
 # textdomain
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     $_ = textdomain("test");
 };
@@ -42,6 +47,7 @@ ok($_, "test");
 # get_handle
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -52,6 +58,7 @@ ok($@, "");
 # maketext
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -65,6 +72,7 @@ ok($_, "Hiya :)");
 # __ (shortcut to maketext)
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -78,6 +86,7 @@ ok($_, "Hiya :)");
 # N_ (do nothing)
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -91,6 +100,7 @@ ok($_, "Hello, world!");
 # N_ (do nothing)
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -108,6 +118,7 @@ ok($_[2], "Big watermelon");
 
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -122,6 +133,7 @@ ok($_, "Hello, world!");
 # English
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -135,6 +147,7 @@ ok($_, "Hiya :)");
 # Traditional Chinese
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
@@ -148,6 +161,7 @@ ok($_, "大家好。");
 # Simplified Chinese
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-cn");
@@ -162,6 +176,7 @@ ok($_, "湮模疑﹝");
 # English
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "en";
@@ -176,6 +191,7 @@ ok($_, "Hiya :)");
 # Traditional Chinese
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "zh-tw";
@@ -190,6 +206,7 @@ ok($_, "大家好。");
 # Simplified Chinese
 eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "zh-cn";

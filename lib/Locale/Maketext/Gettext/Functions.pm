@@ -11,11 +11,34 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.07;
+$VERSION = 0.08;
 @EXPORT = qw();
 push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
+push @EXPORT, qw(die_for_lookup_failures);
 @EXPORT_OK = @EXPORT;
+# Prototype declaration
+sub bindtextdomain($;$);
+sub textdomain(;$);
+sub get_handle(@);
+sub maketext(@);
+sub __(@);
+sub N_(@);
+sub dmaketext($$@);
+sub reload_text();
+sub encoding(;$);
+sub key_encoding(;$);
+sub encode_failure(;$);
+sub die_for_lookup_failures(;$);
+sub _declare_class($);
+sub _catclass(@);
+sub _init_textdomain($);
+sub _get_langs($$);
+sub _get_handle();
+sub _reset();
+sub _new_rid();
+sub _k($);
+sub _lang($);
 
 use Encode qw(encode decode from_to FB_DEFAULT);
 use File::Spec::Functions qw(catdir catfile);
@@ -23,7 +46,7 @@ use Locale::Maketext::Gettext qw(read_mo);
 use vars qw(%LOCALEDIRS %RIDS %CLASSES %LANGS);
 use vars qw(%LHS $_AUTO $_EMPTY $LH $FLH $DOMAIN $CATEGORY $CLASSBASE @LANGS);
 use vars qw(@SYSTEM_LOCALEDIRS);
-use vars qw($ENCODING $KEY_ENCODING $ENCODE_FAILURE $DIE_FOR_LOOKUP_FAILURES);
+use vars qw(%VARS $ENCODING $KEY_ENCODING $ENCODE_FAILURE $DIE_FOR_LOOKUP_FAILURES);
 %LHS = qw();
 # The internal auto/empty lexicons from Locale::Maketext::Gettext
 $_AUTO = $Locale::Maketext::Gettext::_AUTO;
@@ -35,6 +58,8 @@ $CLASSBASE = "Locale::Maketext::Gettext::_runtime";
 # Current language parameters
 @LANGS = qw();
 @SYSTEM_LOCALEDIRS = @Locale::Maketext::Gettext::SYSTEM_LOCALEDIRS;
+%VARS = qw();
+$KEY_ENCODING = "US-ASCII";
 $ENCODE_FAILURE = FB_DEFAULT;
 $DIE_FOR_LOOKUP_FAILURES = 0;
 # Parameters for random class IDs
@@ -44,7 +69,7 @@ $RID_LEN = 8;
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 # bindtextdomain: Bind a text domain to a locale directory
-sub bindtextdomain {
+sub bindtextdomain($;$) {
     local ($_, %_);
     my ($domain, $LOCALEDIR);
     ($domain, $LOCALEDIR) = @_;
@@ -62,7 +87,7 @@ sub bindtextdomain {
 }
 
 # textdomain: Set the current text domain
-sub textdomain {
+sub textdomain(;$) {
     local ($_, %_);
     my ($new_domain);
     $new_domain = $_[0];
@@ -78,7 +103,7 @@ sub textdomain {
 }
 
 # get_handle: Get a language handle
-sub get_handle {
+sub get_handle(@) {
     local ($_, %_);
     # Register the current get_handle arguments
     @LANGS = @_;
@@ -87,14 +112,14 @@ sub get_handle {
 }
 
 # maketext: Maketext, in its long name
-sub maketext {
+sub maketext(@) {
     return __(@_);
 }
 
 # __: Maketext, in its shortcut name
-sub __ {
+sub __(@) {
     local ($_, %_);
-    my ($key, @param, $msg, $encoding, $lh_encoding, $key_encoding);
+    my ($key, @param, $encoding, $lh_encoding, $key_encoding);
     ($key, @param) = @_;
     # Encode the source text
     $key = decode($KEY_ENCODING, $key, $ENCODE_FAILURE)
@@ -104,28 +129,29 @@ sub __ {
     
     # Lookup failures.  Let the fail handler take over
     if (!exists ${$LH->{"Lexicon"}}{$key}) {
-        $msg = $FLH->maketext($key, @param);
-        # Wrap the output encoding
-        if (defined $ENCODING) {
-            $msg = encode($ENCODING, $msg, $ENCODE_FAILURE);
+        $_ = $FLH->maketext($key, @param);
+        # Output to the requested encoding
+        if (exists $VARS{"ENCODING"}) {
+            $_ = encode($VARS{"ENCODING"}, $_, $ENCODE_FAILURE)
+                if defined $VARS{"ENCODING"};
         # Turn back to the encoding of the source text
         } elsif (defined $KEY_ENCODING) {
-            $msg = encode($KEY_ENCODING, $msg, $ENCODE_FAILURE);
+            $_ = encode($KEY_ENCODING, $_, $ENCODE_FAILURE);
         }
     # Process with the ordinary maketext
     } else {
-        $msg = $LH->maketext($key, @param);
-        # Wrap the output encoding
-        from_to($msg, $LH->encoding, $ENCODING, $ENCODE_FAILURE)
-            if defined $ENCODING;
+        $_ = $LH->maketext($key, @param);
+        # Output to the requested encoding
+        $_ = encode($VARS{"ENCODING"}, $_, $ENCODE_FAILURE)
+            if defined $VARS{"ENCODING"};
     }
     
-    return $msg;
+    return $_;
 }
 
 # N_: Return the original text untouched, so that it can be catched
 #     with xgettext
-sub N_ {
+sub N_(@) {
     # Watch out for this perl magic! :p
     return $_[0] unless wantarray;
     return @_;
@@ -133,7 +159,7 @@ sub N_ {
 
 # dmaketext: Maketext in another text domain temporarily,
 #            an equivalent to dgettext.
-sub dmaketext {
+sub dmaketext($$@) {
     local ($_, %_);
     my ($domain, $key, @param, $lh0, $domain0, $text);
     ($domain, $key, @param) = @_;
@@ -150,72 +176,78 @@ sub dmaketext {
 }
 
 # reload_text: Purge the lexicon cache
-sub reload_text {
-    # reload_text is static.  It can even be called this way.
-    Locale::Maketext::Gettext::reload_text;
+sub reload_text() {
+    # reload_text is static.
+    Locale::Maketext::Gettext->reload_text;
 }
 
 # encoding: Set the output encoding
-sub encoding {
+sub encoding(;$) {
     local ($_, %_);
     my ($new_encoding);
     $new_encoding = $_[0];
     # Return the current encoding
-    if (!defined $new_encoding) {
-        return $ENCODING if defined $ENCODING;
-        return if !defined $LH;
-        return $LH->encoding;
-    }
+    $VARS{"ENCODING"} = $new_encoding if @_ > 0;
     # Set and return the current output encoding
-    return ($ENCODING = $new_encoding);
+    return $VARS{"ENCODING"} if exists $VARS{"ENCODING"};
+    return undef;
+    
+    ## Return the current encoding
+    #if (@_ < 1) {
+    #    return $ENCODING if defined $ENCODING;
+    #    return undef if !defined $LH;
+    #    return $LH->encoding;
+    #}
+    ## Set and return the current output encoding
+    #return ($ENCODING = $new_encoding);
 }
 
 # key_encoding: Set the encoding of the original text
-sub key_encoding {
+sub key_encoding(;$) {
     local ($_, %_);
-    my ($new_key_encoding);
-    $new_key_encoding = $_[0];
-    # Return the current key encoding
-    return $KEY_ENCODING if !defined $new_key_encoding;
-    # Set and return the current output encoding
-    return ($KEY_ENCODING = $new_key_encoding);
+    $_ = $_[0];
+    # Set the encoding used in the keys
+    $KEY_ENCODING = $_ if @_ > 0;
+    # Return the encoding
+    return $KEY_ENCODING;
 }
 
 # encode_failure: What to do if the text is out of your output encoding
 #   Refer to Encode on possible values of this check
-sub encode_failure {
+sub encode_failure(;$) {
     local ($_, %_);
-    my ($CHECK);
-    $CHECK = $_[0];
-    # Return the current setting
-    return $ENCODE_FAILURE if !defined $CHECK;
+    $_ = $_[0];
     # Set and return the current setting
-    return ($ENCODE_FAILURE = $CHECK);
+    $ENCODE_FAILURE = $_ if @_ > 0;
+    # Return the current setting
+    return $ENCODE_FAILURE;
 }
 
 # die_for_lookup_failures: Whether we should die for lookup failure
 #   The default is no.  GNU gettext never fails.
-sub die_for_lookup_failures {
+sub die_for_lookup_failures(;$) {
     local ($_, %_);
-    my $is_die;
-    $is_die = $_[0];
-    # Return the current setting
-    return $DIE_FOR_LOOKUP_FAILURES if !defined $is_die;
+    $_ = $_[0];
     # Set the current setting
-    if ($is_die) {
-        $FLH = $_EMPTY;
-        $DIE_FOR_LOOKUP_FAILURES = 1;
-    } else {
-        $FLH = $_AUTO;
-        $DIE_FOR_LOOKUP_FAILURES = 0;
+    if (@_ > 0) {
+        if ($_) {
+            $FLH = $_EMPTY;
+            $DIE_FOR_LOOKUP_FAILURES = 1;
+        } else {
+            $FLH = $_AUTO;
+            $DIE_FOR_LOOKUP_FAILURES = 0;
+        }
     }
+    # Return the current setting
     # Resetting the current language handle is not required
     # Lookup failures are handled by the fail handler directly
     return $DIE_FOR_LOOKUP_FAILURES;
 }
 
 # _declare_class: Declare a class
-sub _declare_class {
+sub _declare_class($) {
+    local ($_, %_);
+    $_ = $_[0];
     eval << "EOT";
 package $_[0];
 use base qw(Locale::Maketext::Gettext);
@@ -224,12 +256,12 @@ EOT
 }
 
 # _catclass: Catenate the class name
-sub _catclass {
+sub _catclass(@) {
     return join("::", @_);;
 }
 
 # _init_textdomain: Initialize a text domain
-sub _init_textdomain {
+sub _init_textdomain($) {
     local ($_, %_);
     my ($domain, $k, @langs, $langs);
     $domain = $_[0];
@@ -286,7 +318,7 @@ sub _init_textdomain {
 }
 
 # _get_langs: Search a locale directory and return the available languages
-sub _get_langs {
+sub _get_langs($$) {
     local ($_, %_);
     my ($dir, $domain, $DH, $entry, $MOfile);
     ($dir, $domain) = @_;
@@ -316,7 +348,7 @@ sub _get_langs {
 }
 
 # _get_handle: Set the language handle with the current DOMAIN and @LANGS
-sub _get_handle {
+sub _get_handle() {
     local ($_, %_);
     my ($k, $class, $subclass);
     
@@ -332,18 +364,24 @@ sub _get_handle {
     $class = $CLASSES{$k};
     # Get the language handle
     $LH = $class->get_handle(@LANGS);
-    # Lexicon empty if failed get_handle
+    # Lexicon empty if failed get_handle()
     return _lang($LH = $_EMPTY) if !defined $LH;
     
     # Obtain the subclass name of the got language handle
     $subclass = ref($LH);
     # Use the existing language handle whenever possible, to reduce
     # the initialization overhead
-    return _lang($LH = $LHS{$subclass}) if exists $LHS{$subclass};
+    if (exists $LHS{$subclass}) {
+        $LH = $LHS{$subclass};
+        $VARS{"ENCODING"} = $LH->{"MO_ENCODING"} if !exists $VARS{"MO_ENCODING"};
+        return _lang($LH)
+    }
     
     # Initialize it
     $LH->bindtextdomain($DOMAIN, $LOCALEDIRS{$DOMAIN});
     $LH->textdomain($DOMAIN);
+    $VARS{"ENCODING"} = $LH->{"MO_ENCODING"} if !exists $VARS{"MO_ENCODING"};
+    $LH->encoding(undef);
     # Register it
     $LHS{$subclass} = $LH;
     
@@ -351,14 +389,14 @@ sub _get_handle {
 }
 
 # _reset: Initialize everything
-sub _reset {
+sub _reset() {
     local ($_, %_);
     
     %LOCALEDIRS = qw();
     undef $LH;
     undef $DOMAIN;
     @LANGS = qw();
-    undef $ENCODING;
+    %VARS = qw();
     undef $KEY_ENCODING;
     $ENCODE_FAILURE = FB_DEFAULT;
     
@@ -366,7 +404,7 @@ sub _reset {
 }
 
 # _new_rid: Generate a new random ID
-sub _new_rid {
+sub _new_rid() {
     local ($_, %_);
     my ($id);
     
@@ -381,12 +419,12 @@ sub _new_rid {
 }
 
 # _k: Build the key for the domain registry
-sub _k {
+sub _k($) {
     return join "\n", $LOCALEDIRS{$_[0]}, $CATEGORY, $_[0];
 }
 
 # _lang: The langage from a language handle.  language_tag isn't quite sane.
-sub _lang {
+sub _lang($) {
     local ($_, %_);
     $_ = $_[0];
     $_ = ref($_);
@@ -476,7 +514,8 @@ a text string into the user's native language in that text domain.
 =item encoding(ENCODING)
 
 Set or retrieve the output encoding.  The default is the same
-encoding as the gettext MO file.
+encoding as the gettext MO file.  You can specify C<undef>, to return
+the result in unencoded UTF-8.
 
 =item key_encoding(ENCODING)
 
@@ -489,6 +528,10 @@ Unterminated bracket group, in:
 
 Then, specify the C<key_encoding> to the encoding of your original
 text.  Returns the current setting.
+
+B<WARNING:> You should always use US-ASCII text keys.  Using
+non-US-ASCII keys is always discouraged and is not guaranteed to
+be working.
 
 =item encode_failure(CHECK)
 

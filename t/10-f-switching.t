@@ -16,6 +16,9 @@ use File::Spec::Functions qw(catdir catfile);
 use lib $FindBin::Bin;
 use vars qw($LOCALEDIR);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
+delete $ENV{$_}
+    foreach qw(LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES LC_NUMERIC
+                LC_MONETARY LC_TIME LANG);
 
 # Switching between different settings
 use File::Copy qw(copy);

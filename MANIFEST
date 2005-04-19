@@ -33,3 +33,4 @@ t/locale/zh_TW/LC_MESSAGES/test2.mo
 t/locale/zh_TW/LC_MESSAGES/test_be.mo
 t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
 t/test_native.po
+META.yml                                 Module meta-data (added by MakeMaker)

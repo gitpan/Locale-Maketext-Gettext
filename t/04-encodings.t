@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 27 }
+BEGIN { plan tests => 33 }
 
 use Encode qw();
 use FindBin qw();
@@ -214,3 +214,35 @@ eval {
 ok($@, "");
 # 27
 ok($_, "故事都有美&#40599;的&#32080;局。");
+
+# Return the unencoded UTF-8 text
+eval {
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
+    $_->bindtextdomain("test", $LOCALEDIR);
+    $_->textdomain("test");
+    $_->encoding(undef);
+    $_ = $_->maketext("Hello, world!");
+};
+# 28
+ok($@, "");
+# 29
+ok($_, "\x{5927}\x{5BB6}\x{597D}\x{3002}");
+# 30
+ok((Encode::is_utf8($_)? "utf8": "non-utf8"), "utf8");
+
+# Return the unencoded UTF-8 text with auto lexicon
+eval {
+    require T_L10N;
+    $_ = T_L10N->get_handle("zh-tw");
+    $_->bindtextdomain("test", $LOCALEDIR);
+    $_->textdomain("test");
+    $_->encoding(undef);
+    $_ = $_->maketext("Big watermelon");
+};
+# 31
+ok($@, "");
+# 32
+ok($_, "Big watermelon");
+# 33
+ok((Encode::is_utf8($_)? "utf8": "non-utf8"), "utf8");

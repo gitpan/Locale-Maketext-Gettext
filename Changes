@@ -1,5 +1,52 @@
 Locale-Maketext-Gettext change log
 
+2005-04-19
+	 1. Gettext.pm: Using undef as encoding or key_encoding.
+	    Methods encoding() and key_encoding() now check the
+	    number of arguments instead of the argument value.
+	    When undef, the unencoded UTF-8 text is returned.
+	 2. Gettext.pm: Prototype of subroutine read_mo() is declared
+	    first now.
+	 3. Gettext.pm: Deprecated subroutine readmo() is removed.
+	 4. Functions.pm: Prototypes of the following subroutines are
+	    declared first now: bindtextdomain(), textdomain(),
+	    get_handle(), maketext(), __(), N_(), dmaketext(),
+	    reload_text(), encoding(), key_encoding(),
+	    encode_failure(), die_for_lookup_failures(),
+	    _declare_class(), _catclass(), _init_textdomain(),
+	    _get_langs(), _get_handle(), _reset(), _new_rid(), _k()
+	    and _lang().
+	 5. 07-f-basic.t: Locale environment variables are cleared
+	    before running tests, to avoid confusion from the user's
+	    current locale.
+	 6. 10-f-switching.t: Locale environment variables are
+	    cleared before running tests, to avoid confusion from the
+	    user's current locale.
+	 7. Gettext.pm: Default KEY_ENCODING to US-ASCII.  It is
+	    always decoded to UTF-8 first when looked up in the
+	    _AUTO lexicon, to ensure that the resulted text is always
+	    in UTF-8.
+	 8. Gettext.pm: Avoid caching undefined MO file encoding when
+	    MO file is not available.
+	 9. Gettext.pm: New attribute "MO_ENCODING" is added to
+	    to record the encoding of the MO file.
+	10. Functions.pm: Default KEY_ENCODING to US-ASCII.  It is
+	    always decoded to UTF-8 first when looked up in the
+	    _AUTO lexicon, to ensure that the resulted text is always
+	    in UTF-8.
+
+2005-04-05
+	 1. Gettext.pm: Subroutine attribute "method" is taged on the
+	    following methods: encoding(), key_encoding(), new(),
+	    subclass_init(), bindtextdomain(), textdomain(),
+	    maketext(), reload_text(), die_for_lookup_failures()
+	    and encode_failure().
+
+2003-05-12
+	 1. Gettext.pm: key_encoding applied to "not found" keys
+	    only, so that it can be looked up in their original
+	    encoding in the %Lexicon.
+
 2003-05-09	version 1.10
 	 1. Functions.pm: _get_handle: Fallback language handler
 	    changed from the failed language handler $FLH to
