@@ -280,7 +280,7 @@ sub _init_textdomain($) {
         foreach (@SYSTEM_LOCALEDIRS) {
             @langs = _get_langs($_, $domain);
             # Domain not found in this directory
-            next if scalar(@langs) == 0;
+            next if @langs == 0;
             $LOCALEDIRS{$domain} = $_;
             last;
         }

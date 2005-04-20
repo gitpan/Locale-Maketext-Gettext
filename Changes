@@ -1,5 +1,9 @@
 Locale-Maketext-Gettext change log
 
+2005-04-21	version 1.14
+	 1. maketext: Prototypes of the following subroutines are
+	    declared first now: main() and parse_args().
+
 2005-04-20	version 1.13
 	 1. Changes: Addition of new unencoded UTF-8 tests is
 	    appended to the change log.

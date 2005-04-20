@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 # Command-line interface to Locale::Maketext::Gettext (and Locale::Maketext)
 
-# Copyright (c) 2003 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 # First written: 2003-05-03
@@ -9,10 +9,13 @@
 use 5.008;
 use strict;
 use warnings;
-use Locale::Maketext::Gettext::Functions;
 use Getopt::Long qw(GetOptions);
+use Locale::Maketext::Gettext::Functions;
 use vars qw($VERSION);
 $VERSION = 0.03;
+# Prototype declaration
+sub main();
+sub parse_args();
 
 use vars qw($THIS_FILE $SHORTHELP $VERSTR $SEARCH $HELP);
 $THIS_FILE = $0;
@@ -51,7 +54,7 @@ main();
 exit 0;
 
 # main: Main program
-sub main {
+sub main() {
     local ($_, %_);
     
     # Parse the arguments
@@ -67,7 +70,7 @@ sub main {
 }
 
 # parse_args: Parse the arguments
-sub parse_args {
+sub parse_args() {
     local ($_, %_);
     
     # Get the arguments 取得參數
@@ -81,15 +84,16 @@ sub parse_args {
     };
     die "$THIS_FILE: $@\n" if $@ ne "";
     
-    die "$THIS_FILE: missing arguments\n" if scalar(@ARGV) == 0;
+    # The MSGKEY
+    die "$THIS_FILE: missing arguments\n" if @ARGV == 0;
+    $KEY = shift @ARGV;
+    @PARAM = @ARGV;
     
     # Set the locale directory
     $LOCALEDIR = $ENV{"TEXTDOMAINDIR"} if exists $ENV{"TEXTDOMAINDIR"};
     # Set the text domain
     $DOMAIN = $ENV{"TEXTDOMAIN"}
         if !defined $DOMAIN && exists $ENV{"TEXTDOMAIN"};
-    $KEY = shift @ARGV;
-    @PARAM = @ARGV;
     
     return;
 }
@@ -195,7 +199,7 @@ imacat <imacat@mail.imacat.idv.tw>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 imacat. All rights reserved. This program is free
+Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 
