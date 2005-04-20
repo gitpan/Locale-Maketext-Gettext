@@ -1,6 +1,6 @@
 # Locale::Maketext::Gettext::Functions - Functional interface to Locale::Maketext::Gettext
 
-# Copyright (c) 2003 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 # First written: 2003-04-28
@@ -697,7 +697,7 @@ imacat <imacat@mail.imacat.idv.tw>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 imacat. All rights reserved. This program is free
+Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 

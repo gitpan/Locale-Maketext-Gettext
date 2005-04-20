@@ -1,6 +1,11 @@
 Locale-Maketext-Gettext change log
 
-2005-04-19
+2005-04-10	version 1.12
+	Documentation fixes.
+	 1. Update the copyright year on the updated files.
+	 2. Changes: Vesion number added.
+
+2005-04-19	version 1.11
 	 1. Gettext.pm: Using undef as encoding or key_encoding.
 	    Methods encoding() and key_encoding() now check the
 	    number of arguments instead of the argument value.
