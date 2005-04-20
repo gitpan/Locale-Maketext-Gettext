@@ -1,9 +1,17 @@
 Locale-Maketext-Gettext change log
 
-2005-04-10	version 1.12
+2005-04-20	version 1.13
+	 1. Changes: Addition of new unencoded UTF-8 tests is
+	    appended to the change log.
+	 2. Changes: Addition of warning of key_encoding() is
+	    appended to the change log.
+	 3. Changes: Typo fixed: "Vesion" should be "Version".
+	 4. Changes: Typo fixed: 2005-04-10 should be 2005-04-20.
+
+2005-04-20	version 1.12
 	Documentation fixes.
 	 1. Update the copyright year on the updated files.
-	 2. Changes: Vesion number added.
+	 2. Changes: Version number added.
 
 2005-04-19	version 1.11
 	 1. Gettext.pm: Using undef as encoding or key_encoding.
@@ -39,6 +47,14 @@ Locale-Maketext-Gettext change log
 	    always decoded to UTF-8 first when looked up in the
 	    _AUTO lexicon, to ensure that the resulted text is always
 	    in UTF-8.
+	11. 04-encodings.t: Tests 28-33 added to test returning
+	    unencoded UTF-8 text.
+	12. 09-f-encodings.t: Tests 28-33 added to test returning
+	    unencoded UTF-8 text.
+	13. Gettext.pm: Warning is added to the use of
+	    key_encoding().
+	14. Functions.pm: Warning is added to the use of
+	    key_encoding().
 
 2005-04-05
 	 1. Gettext.pm: Subroutine attribute "method" is taged on the
