@@ -1,5 +1,10 @@
 Locale-Maketext-Gettext change log
 
+2005-04-26	version 1.15
+	 1. SIGNATURE: Included Modules::Signature gpg signature
+	    file added.
+	 2. 00-signature.t: Added.
+
 2005-04-21	version 1.14
 	 1. maketext: Prototypes of the following subroutines are
 	    declared first now: main() and parse_args().

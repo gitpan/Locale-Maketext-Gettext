@@ -1,12 +1,14 @@
+bin/maketext
 BUGS
 Changes
-MANIFEST			This list of files
-Makefile.PL
-README
-THANKS
-bin/maketext
 lib/Locale/Maketext/Gettext.pm
 lib/Locale/Maketext/Gettext/Functions.pm
+Makefile.PL
+MANIFEST			This list of files
+META.yml
+README
+SIGNATURE
+t/00-signature.t
 t/01-basic.t
 t/02-big-endian.t
 t/03-errors.t
@@ -18,7 +20,6 @@ t/08-f-errors.t
 t/09-f-encodings.t
 t/10-f-switching.t
 t/11-command-line.t
-t/T_L10N.pm
 t/locale/C/LC_MESSAGES/test.mo
 t/locale/en/LC_MESSAGES/bad.mo
 t/locale/en/LC_MESSAGES/test.mo
@@ -32,5 +33,6 @@ t/locale/zh_TW/LC_MESSAGES/test.mo
 t/locale/zh_TW/LC_MESSAGES/test2.mo
 t/locale/zh_TW/LC_MESSAGES/test_be.mo
 t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
+t/T_L10N.pm
 t/test_native.po
-META.yml                                 Module meta-data (added by MakeMaker)
+THANKS
