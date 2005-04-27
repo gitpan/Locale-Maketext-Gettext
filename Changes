@@ -1,5 +1,8 @@
 Locale-Maketext-Gettext change log
 
+2005-04-27	version 1.17
+	 1. Changes: Typo fixed.
+
 2005-04-26	version 1.16
 	Test suite fixes.
 	 1. 02-big-endian.t: In test 7, 8, $MOfile and $POfile are quoted
@@ -13,8 +16,6 @@ Locale-Maketext-Gettext change log
 	 3. Changes: File edited to widen line limit from 60 columns to 79
 	    columns, to ease the reading.
 	 4. THANKS: Updated.
-
-corion-cpanplus[at]corion.net
 
 2005-04-26	version 1.15
 	 1. SIGNATURE: Included Modules::Signature gpg signature file added.
