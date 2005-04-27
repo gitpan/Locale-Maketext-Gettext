@@ -66,7 +66,7 @@ last unless $? == 0;
 last unless /GNU gettext/;
 $POfile = catfile($FindBin::Bin, "test_native.po");
 $MOfile = catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_native.mo");
-`msgfmt -o $MOfile $POfile`;
+`msgfmt -o "$MOfile" "$POfile"`;
 last unless $? == 0;
 $skip = 0;
 eval {

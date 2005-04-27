@@ -25,7 +25,7 @@ eval {
     delete $ENV{"LANGUAGE"};
     delete $ENV{"TEXTDOMAINDIR"};
     delete $ENV{"TEXTDOMAIN"};
-    @_ = `$maketext "Hello, world!"`;
+    @_ = `"$maketext" "Hello, world!"`;
 };
 # 1
 ok($@, "");
@@ -39,7 +39,7 @@ eval {
     $ENV{"LANGUAGE"} = "C";
     $ENV{"TEXTDOMAINDIR"} = $LOCALEDIR;
     delete $ENV{"TEXTDOMAIN"};
-    @_ = `$maketext -d test "Hello, world!"`;
+    @_ = `"$maketext" -d test "Hello, world!"`;
 };
 # 3
 ok($@, "");
@@ -53,7 +53,7 @@ eval {
     $ENV{"LANGUAGE"} = "C";
     $ENV{"TEXTDOMAINDIR"} = $LOCALEDIR;
     $ENV{"TEXTDOMAIN"} = "test";
-    @_ = `$maketext "Hello, world!"`;
+    @_ = `"$maketext" "Hello, world!"`;
 };
 # 5
 ok($@, "");
@@ -66,7 +66,7 @@ eval {
     $ENV{"LANGUAGE"} = "C";
     $ENV{"TEXTDOMAINDIR"} = $LOCALEDIR;
     $ENV{"TEXTDOMAIN"} = "test";
-    @_ = `$maketext -s "Hello, world!"`;
+    @_ = `"$maketext" -s "Hello, world!"`;
 };
 # 7
 ok($@, "");
@@ -79,7 +79,7 @@ eval {
     $ENV{"LANGUAGE"} = "C";
     $ENV{"TEXTDOMAINDIR"} = $LOCALEDIR;
     $ENV{"TEXTDOMAIN"} = "test";
-    @_ = `$maketext -s "[*,_1,directory,directories]" 5`;
+    @_ = `"$maketext" -s "[*,_1,directory,directories]" 5`;
 };
 # 9
 ok($@, "");
