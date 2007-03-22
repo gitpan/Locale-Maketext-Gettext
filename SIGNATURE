@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.44.
+signed via the Module::Signature module, version 0.55.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -15,27 +15,27 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 f044bfe71c57b6f25c659bc0a6067aa854bc8343 BUGS
-SHA1 a8c0a48d2c7e1b8cd485910c2708afb62f0416c6 Changes
+SHA1 52aba2071e932da419ee6ed66c8b21ad3635b7e1 Changes
 SHA1 86cb116e21a2ea73d34402a9d09d6f4be259829b MANIFEST
-SHA1 a6dc1ba4dccb3720ad69aab7669ee61944344aad META.yml
-SHA1 3f27a3a27dd6da953230dc892051aabb118bef6c Makefile.PL
+SHA1 9857213f6e6a28b6e3b70b5c64947b73d44d364e META.yml
+SHA1 4ff3aec16c86cb381584d35fb8cb0af5aa96f31d Makefile.PL
 SHA1 bfe7c24b3aceda7d75d80d0525035df339453121 README
-SHA1 775f4a0cc1fcb6912112adc48fde8286630c4bd9 THANKS
+SHA1 e7a66e4a765a1ca43576557ababd20d66bc8f1f7 THANKS
 SHA1 f17911193d0c8502c11799699759ecb0b6406dff bin/maketext
-SHA1 2190a212ecb4ac436ce536b0ea57e2ecf38a6e89 lib/Locale/Maketext/Gettext.pm
+SHA1 295c19078e16c09c9d10ef1199e87418187a84b4 lib/Locale/Maketext/Gettext.pm
 SHA1 60754ac4513cb7398ef21669014eb559f79a5440 lib/Locale/Maketext/Gettext/Functions.pm
 SHA1 525f414c7a0aadc61240a4b0959ca2cda7514c75 t/00-signature.t
-SHA1 2b8f708e0b6ebbac380bdba65c00ecba919a1cbe t/01-basic.t
-SHA1 ba25e20b90f3e3d7fa587debeabb5159c29744f1 t/02-big-endian.t
-SHA1 38c1e415572dd044fbd54ed8d67a3ed71dbcb549 t/03-errors.t
-SHA1 2717b634a77d0243ab1de6e1ec14a86d67fc94bd t/04-encodings.t
-SHA1 290f19650c55aa4a91c1051efdb421933c397dbc t/05-switching.t
-SHA1 cffa80d408ee125fe69c3dfa23614b9a7114e2fa t/06-racing.t
-SHA1 12b4bc92107d1c60fd3aa9140e8283a2e14641d7 t/07-f-basic.t
-SHA1 95e5d72782205e7df9af56e1ac78fb47af77e573 t/08-f-errors.t
-SHA1 472e034329b41e0e4678682c86af77567bab4e0d t/09-f-encodings.t
-SHA1 434dcde9f25969ac63459b2a0e9ae19778825321 t/10-f-switching.t
-SHA1 5ee203832ba507a4512c648fb6f9ad9d34f48a75 t/11-command-line.t
+SHA1 9d330872d9e42f3880fef48a363876671dce3412 t/01-basic.t
+SHA1 50bfbbac6a6abdc8439cc0da6d43fa00a01358f5 t/02-big-endian.t
+SHA1 f95e9d264808cae5c6a435dffdd888ad6b3b2c1f t/03-errors.t
+SHA1 65e5688ca092f77b9276c0d81afda65ad148accb t/04-encodings.t
+SHA1 e95e54abf1ba5c6ebf5e1ff0907bb250c94fb364 t/05-switching.t
+SHA1 23ec36debe4a69c5dcd973383845820ebc9dd83b t/06-racing.t
+SHA1 4d87c96588f9efd8ea303d81c22eeb1715621034 t/07-f-basic.t
+SHA1 ad9193b06bfbcb5abf7441e5546bb764bcd7f94e t/08-f-errors.t
+SHA1 05601585a478c726569b5a76c358af31b02571d0 t/09-f-encodings.t
+SHA1 1a5583dab2df67d9050fd611acb7098f73249b66 t/10-f-switching.t
+SHA1 4afe4980e7ed4d326009b8257e01320abfb33d14 t/11-command-line.t
 SHA1 97dad77dee7f751d09efdb6900b077d68c853d46 t/T_L10N.pm
 SHA1 38f0aa7d0d102bef6f84676c089f8ce2035b1ca3 t/locale/C/LC_MESSAGES/test.mo
 SHA1 80ca74a96bd6f83bd903ebfd021b87c9184582eb t/locale/en/LC_MESSAGES/bad.mo
@@ -52,9 +52,9 @@ SHA1 20f810c6229d0bd4064b27f9b3d86b61a20f0821 t/locale/zh_TW/LC_MESSAGES/test_be
 SHA1 ce40b0a4b57820b7104df00049d69b6653a55c64 t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
 SHA1 2c5d420b6687bbf21e6c42058c6e1476e38501bd t/test_native.po
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-iD8DBQFCb1bWi9gubzC5S1wRAg7DAKCS6ngit8eAExyX/E4vpOHgkIAQ+gCfTTaH
-VeBjw5hBfOH1gzREZy/DHmU=
-=5EYf
+iD8DBQFGAeK0i9gubzC5S1wRAtcHAKCKK+18eSeIzI/ATlsWSf3eRCchsQCdE+L3
+GEfZI407rbbPt84xnEU7Tug=
+=s8+K
 -----END PGP SIGNATURE-----

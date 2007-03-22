@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Basic test suite
-# Copyright (c) 2003 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -14,7 +14,7 @@ BEGIN { plan tests => 16 }
 use FindBin;
 use File::Spec::Functions qw(catdir catfile);
 use lib $FindBin::Bin;
-use vars qw($LOCALEDIR);
+use vars qw($LOCALEDIR $r);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # Basic test suite
@@ -22,27 +22,29 @@ use Encode qw(decode);
 use vars qw($META $n $k1 $k2 $s1 $s2);
 
 # bindtextdomain
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_ = $_->bindtextdomain("test");
+    return 1;
 };
 # 1
-ok($@, "");
+ok($r, 1);
 # 2
 ok($_, "$LOCALEDIR");
 
 # textdomain
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->textdomain;
+    return 1;
 };
 # 3
-ok($@, "");
+ok($r, 1);
 # 4
 ok($_, "test");
 
@@ -58,7 +60,7 @@ Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Plural-Forms: nplurals=2; plural=n != 1;
 EOT
-eval {
+$r = eval {
     use Locale::Maketext::Gettext;
     $_ = catfile($LOCALEDIR, "en", "LC_MESSAGES", "test.mo");
     %_ = read_mo($_);
@@ -68,9 +70,10 @@ eval {
     $k2 = $_[1];
     $s1 = $_{$k1};
     $s2 = $_{$k2};
+    return 1;
 };
 # 5
-ok($@, "");
+ok($r, 1);
 # 6
 ok($n, 2);
 # 7
@@ -83,40 +86,43 @@ ok($s1, $META);
 ok($s2, "Hiya :)");
 
 # English
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 11
-ok($@, "");
+ok($r, 1);
 # 12
 ok($_, "Hiya :)");
 
 # Traditional Chinese
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 13
-ok($@, "");
+ok($r, 1);
 # 14
 ok($_, "¤j®a¦n¡C");
 
 # Simplified Chinese
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("zh-cn");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 15
-ok($@, "");
+ok($r, 1);
 # 16
 ok($_, "´ó¼ÒºÃ¡£");

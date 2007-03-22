@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite on the functional interface for switching between different settings
-# Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -14,7 +14,7 @@ BEGIN { plan tests => 57 }
 use FindBin;
 use File::Spec::Functions qw(catdir catfile);
 use lib $FindBin::Bin;
-use vars qw($LOCALEDIR);
+use vars qw($LOCALEDIR $r);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 delete $ENV{$_}
     foreach qw(LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES LC_NUMERIC
@@ -25,7 +25,7 @@ use File::Copy qw(copy);
 use vars qw($dir1 $dir2 $dir3 $f1 $f11 $f12 $f2 $f21 $f3 $f31 $class);
 
 # dmaketext in the middle
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     get_handle("en");
     bindtextdomain("test", $LOCALEDIR);
@@ -37,9 +37,10 @@ eval {
     $_[3] = dmaketext("test2", "Every story has a happy ending.");
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
+    return 1;
 };
 # 1
-ok($@, "");
+ok($r, 1);
 # 2
 ok($_[0], "Hiya :)");
 # 3
@@ -54,7 +55,7 @@ ok($_[4], "Hiya :)");
 ok($_[5], "Every story has a happy ending.");
 
 # Switch between domains
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     bindtextdomain("test", $LOCALEDIR);
     bindtextdomain("test2", $LOCALEDIR);
@@ -68,9 +69,10 @@ eval {
     textdomain("test");
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
+    return 1;
 };
 # 8
-ok($@, "");
+ok($r, 1);
 # 9
 ok($_[0], "Hiya :)");
 # 10
@@ -85,7 +87,7 @@ ok($_[4], "Hiya :)");
 ok($_[5], "Every story has a happy ending.");
 
 # Switch between languages
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
@@ -95,9 +97,10 @@ eval {
     $_[1] = __("Hello, world!");
     get_handle("zh-cn");
     $_[2] = __("Hello, world!");
+    return 1;
 };
 # 15
-ok($@, "");
+ok($r, 1);
 # 16
 ok($_[0], "Hiya :)");
 # 17
@@ -106,7 +109,7 @@ ok($_[1], "產");
 ok($_[2], "大家好。");
 
 # Switch between languages - by environment
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
@@ -119,9 +122,10 @@ eval {
     $ENV{"LANG"} = "zh-cn";
     get_handle();
     $_[2] = __("Hello, world!");
+    return 1;
 };
 # 19
-ok($@, "");
+ok($r, 1);
 # 20
 ok($_[0], "Hiya :)");
 # 21
@@ -130,7 +134,7 @@ ok($_[1], "產");
 ok($_[2], "大家好。");
 
 # Switch between different language methods
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
@@ -144,9 +148,10 @@ eval {
     $ENV{"LANG"} = "en";
     get_handle();
     $_[3] = __("Hello, world!");
+    return 1;
 };
 # 23
-ok($@, "");
+ok($r, 1);
 # 24
 ok($_[0], "Hiya :)");
 # 25
@@ -157,7 +162,7 @@ ok($_[2], "大家好。");
 ok($_[3], "Hiya :)");
 
 # Reuse of a same text domain class
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     $ENV{"LANG"} = "en";
     bindtextdomain("test", $LOCALEDIR);
@@ -187,9 +192,10 @@ eval {
     $_[8] = __("Every story has a happy ending.");
     $_[9] = ref($Locale::Maketext::Gettext::Functions::LH);
     $_[9] =~ s/^(.+)::.*?$/$1/;
+    return 1;
 };
 # 28
-ok($@, "");
+ok($r, 1);
 # 29
 ok($_[0], "Hiya :)");
 # 30
@@ -210,7 +216,7 @@ ok($_[8], "Every story has a happy ending.");
 ok($_[2], $_[9]);
 
 # Language addition/removal
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     $dir1 = catdir($LOCALEDIR, "en", "LC_MESSAGES");
     $dir2 = catdir($LOCALEDIR, "zh_TW", "LC_MESSAGES");
@@ -265,9 +271,10 @@ eval {
     unlink $f1;
     unlink $f2;
     unlink $f3;
+    return 1;
 };
 # 38
-ok($@, "");
+ok($r, 1);
 # 39
 ok($_[0], "Hello, world!");
 # 40
@@ -290,7 +297,7 @@ ok($_[8], "Hello, world!");
 ok($_[9], "Hello, world!");
 
 # Garbage collection - drop abandoned language handles
-eval {
+$r = eval {
     use Locale::Maketext::Gettext::Functions;
     $dir1 = catdir($LOCALEDIR, "en", "LC_MESSAGES");
     $dir2 = catdir($LOCALEDIR, "zh_TW", "LC_MESSAGES");
@@ -321,14 +328,15 @@ eval {
     get_handle("zh-tw");
     get_handle("zh-cn");
     @_ = grep /^$class/, keys %Locale::Maketext::Gettext::Functions::LHS;
+    return 1;
 };
 # 49
-ok($@, "");
+ok($r, 1);
 # 50
 ok(scalar(@_), 0);
 
 # Reload the text
-eval {
+$r = eval {
     $dir1 = catdir($LOCALEDIR, "en", "LC_MESSAGES");
     $f1 = catfile($dir1, "test_reload.mo");
     $f11 = catfile($dir1, "test.mo");
@@ -349,9 +357,10 @@ eval {
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
     unlink $f1;
+    return 1;
 };
 # 51
-ok($@, "");
+ok($r, 1);
 # 52
 ok($_[0], "Hiya :)");
 # 53

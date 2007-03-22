@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite for switching between different settings
-# Copyright (c) 2003 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -14,7 +14,7 @@ BEGIN { plan tests => 25 }
 use FindBin;
 use File::Spec::Functions qw(catdir catfile);
 use lib $FindBin::Bin;
-use vars qw($LOCALEDIR);
+use vars qw($LOCALEDIR $r);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # Switching between different settings
@@ -22,7 +22,7 @@ use File::Copy qw(copy);
 use vars qw($lh1 $lh2 $dir $f $f1 $f2);
 
 # 2 language handles of the same localization subclass
-eval {
+$r = eval {
     require T_L10N;
     $lh1 = T_L10N->get_handle("en");
     $lh1->bindtextdomain("test", $LOCALEDIR);
@@ -36,9 +36,10 @@ eval {
     $_[3] = $lh2->maketext("Every story has a happy ending.");
     $_[4] = $lh1->maketext("Hello, world!");
     $_[5] = $lh1->maketext("Every story has a happy ending.");
+    return 1;
 };
 # 1
-ok($@, "");
+ok($r, 1);
 # 2
 ok($_[0], "Hiya :)");
 # 3
@@ -53,7 +54,7 @@ ok($_[4], "Hiya :)");
 ok($_[5], "Every story has a happy ending.");
 
 # Switch between domains
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
@@ -67,9 +68,10 @@ eval {
     $_->textdomain("test");
     $_[4] = $_->maketext("Hello, world!");
     $_[5] = $_->maketext("Every story has a happy ending.");
+    return 1;
 };
 # 8
-ok($@, "");
+ok($r, 1);
 # 9
 ok($_[0], "Hiya :)");
 # 10
@@ -84,7 +86,7 @@ ok($_[4], "Hiya :)");
 ok($_[5], "Every story has a happy ending.");
 
 # Switch between encodings
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
@@ -95,9 +97,10 @@ eval {
     $_[1] = $_->maketext("Hello, world!");
     $_->encoding("Big5");
     $_[2] = $_->maketext("Hello, world!");
+    return 1;
 };
 # 15
-ok($@, "");
+ok($r, 1);
 # 16
 ok($_[0], "¤j®a¦n¡C");
 # 17
@@ -106,7 +109,7 @@ ok($_[1], "å¤§å®¶å¥½ã€‚");
 ok($_[2], "¤j®a¦n¡C");
 
 # Reload the text
-eval {
+$r = eval {
     $dir = catdir($LOCALEDIR, "en", "LC_MESSAGES");
     $f = catfile($dir, "test_reload.mo");
     $f1 = catfile($dir, "test.mo");
@@ -129,9 +132,10 @@ eval {
     $_[5] = $_->maketext("Every story has a happy ending.");
     
     unlink $f;
+    return 1;
 };
 # 19
-ok($@, "");
+ok($r, 1);
 # 20
 ok($_[0], "Hiya :)");
 # 21

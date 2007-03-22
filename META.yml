@@ -1,10 +1,13 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Locale-Maketext-Gettext
-version:      1.17
-version_from: 
-installdirs:  site
-requires:
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.17
+--- #YAML:1.0
+name:                Locale-Maketext-Gettext
+version:             1.18
+abstract:            Joins gettext and Maketext frameworks
+license:             ~
+generated_by:        ExtUtils::MakeMaker version 6.32
+distribution_type:   module
+requires:     
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - imacat <imacat@mail.imacat.idv.tw>

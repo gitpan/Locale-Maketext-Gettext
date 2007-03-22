@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite for the behavior when something goes wrong
-# Copyright (c) 2003 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -14,160 +14,174 @@ BEGIN { plan tests => 25 }
 use FindBin;
 use File::Spec::Functions qw(catdir);
 use lib $FindBin::Bin;
-use vars qw($LOCALEDIR);
+use vars qw($LOCALEDIR $r);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
 
 # When something goes wrong
 use vars qw($dir $domain $lang $skip);
 # GNU gettext never fails!
 # bindtextdomain
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_ = $_->bindtextdomain("test");
+    return 1;
 };
 # 1
-ok($@, "");
+ok($r, 1);
 # 2
 ok($_, undef);
 
 # textdomain
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_ = $_->textdomain;
+    return 1;
 };
 # 3
-ok($@, "");
+ok($r, 1);
 # 4
 ok($_, undef);
 
 # No text domain claimed yet
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 5
-ok($@, "");
+ok($r, 1);
 # 6
 ok($_, "Hello, world!");
 
 # Non-existing LOCALEDIR
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", "/dev/null");
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 7
-ok($@, "");
+ok($r, 1);
 # 8
 ok($_, "Hello, world!");
 
 # Not-registered DOMAIN
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->textdomain("not_registered");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 9
-ok($@, "");
+ok($r, 1);
 # 10
 ok($_, "Hello, world!");
 
 # PO file not exists
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("no_such_domain", $LOCALEDIR);
     $_->textdomain("no_such_domain");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 11
-ok($@, "");
+ok($r, 1);
 # 12
 ok($_, "Hello, world!");
 
 # PO file invalid
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("bad", $LOCALEDIR);
     $_->textdomain("bad");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 13
-ok($@, "");
+ok($r, 1);
 # 14
 ok($_, "Hello, world!");
 
 # No such message
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("non-existing message");
+    return 1;
 };
 # 15
-ok($@, "");
+ok($r, 1);
 # 16
 ok($_, "non-existing message");
 
 # die_for_lookup_failures
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->die_for_lookup_failures(1);
     $_ = $_->maketext("non-existing message");
+    return 1;
 };
+# To be refined - to know that we failed at maketext()
+# was ok($@, qr/maketext doesn't know how to say/);
 # 17
-ok($@, qr/maketext doesn't know how to say/);
+ok($r, undef);
 
 # multibyte keys
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_->key_encoding("Big5");
     $_ = $_->maketext("（未設定）");
+    return 1;
 };
 # 18
-ok($@, "");
+ok($r, 1);
 # 19
 ok($_, "（未設定）");
 
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", "/dev/null");
     $_->textdomain("test");
     $_->key_encoding("Big5");
     $_ = $_->maketext("（未設定）");
+    return 1;
 };
 # 20
-ok($@, "");
+ok($r, 1);
 # 21
 ok($_, "（未設定）");
 
 # Call maketext before and after binding text domain
-eval {
+$r = eval {
     require T_L10N;
     $_ = T_L10N->get_handle("en");
     $_->maketext("Hello, world!");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
     $_ = $_->maketext("Hello, world!");
+    return 1;
 };
 # 22
-ok($@, "");
+ok($r, 1);
 # 23
 ok($_, "Hiya :)");
 
@@ -196,16 +210,17 @@ foreach $dir (@Locale::Maketext::Gettext::SYSTEM_LOCALEDIRS) {
 }
 $skip = defined $domain? 0: 1;
 if (!$skip) {
-    eval {
+    $r = eval {
         require T_L10N;
         $_ = T_L10N->get_handle($lang);
         $_->textdomain($domain);
         $_ = $_->maketext("");
         # Skip if $Lexicon{""} does not exists
         $skip = 1 if $_ eq "";
+        return 1;
     };
 }
 # 24
-skip($skip, $@, "");
+skip($skip, $r, 1);
 # 25
 skip($skip, $_, qr/Project-Id-Version:/);

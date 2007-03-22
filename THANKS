@@ -13,5 +13,9 @@ Thanks to Max Maischein <corion@corion.net> for reporting CPAN tester failures
 200029, 200332 and 200331, that helps me finding the shell character escaping
 problem on my test suite.
 
+Thanks to Andreas Koenig <andk@cpan.org> for reporting CPAN tester failures
+387357 and submitting rt bug 23956, informing me the base class
+Locale::Maketext has updated its error handling behavior in the Perl 5.9.
+
 Finally, well, :p thanks to Larry Wall, for writing such a
 great programming language, as perl.

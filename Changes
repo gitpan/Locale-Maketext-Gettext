@@ -1,5 +1,20 @@
 Locale-Maketext-Gettext change log
 
+2007-03-22	version 1.18
+	Fixes for Perl 5.9.  Locale::Maketext in Perl 5.9 does not set $@
+	as its error message.  Tests replying on $@ may fail for this.  But
+	I should check the return value of the eval{} block rather than	$@
+	anyway.
+	 1. t/*.t: Adition of $r as the return value of the eval{} blocks.
+	    Addition of "return 1;" to the eval{} blocks to specify the return
+	    values.  Changing tests "ok($@, "");" to "ok($r, 1);".  Changing
+	    tests "ok($@, qr/maketext doesn't know how to say/);" and
+	    "ok($@, qr/does not map to/);" to "ok($r, undef)".  This is to
+	    be refined.  It is necessary to test if it fails by our expected
+	    reason rather than only knowing that it fails.
+	 2. Update the version number of Locale::Maketext::Gettext to match
+	    the distribution version.
+
 2005-04-27	version 1.17
 	 1. Changes: Typo fixed.
 
