@@ -1,5 +1,6 @@
 bin/maketext
 BUGS
+Build.PL
 Changes
 lib/Locale/Maketext/Gettext.pm
 lib/Locale/Maketext/Gettext/Functions.pm
@@ -20,6 +21,7 @@ t/08-f-errors.t
 t/09-f-encodings.t
 t/10-f-switching.t
 t/11-command-line.t
+t/99-pod.t
 t/locale/C/LC_MESSAGES/test.mo
 t/locale/en/LC_MESSAGES/bad.mo
 t/locale/en/LC_MESSAGES/test.mo

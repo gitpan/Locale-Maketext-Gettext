@@ -1,6 +1,6 @@
 # Locale::Maketext::Gettext::Functions - Functional interface to Locale::Maketext::Gettext
 
-# Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 # First written: 2003-04-28
@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.08;
+$VERSION = 0.10;
 @EXPORT = qw();
 push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
@@ -35,6 +35,7 @@ sub _catclass(@);
 sub _init_textdomain($);
 sub _get_langs($$);
 sub _get_handle();
+sub _get_empty_handle();
 sub _reset();
 sub _new_rid();
 sub _k($);
@@ -44,14 +45,10 @@ use Encode qw(encode decode from_to FB_DEFAULT);
 use File::Spec::Functions qw(catdir catfile);
 use Locale::Maketext::Gettext qw(read_mo);
 use vars qw(%LOCALEDIRS %RIDS %CLASSES %LANGS);
-use vars qw(%LHS $_AUTO $_EMPTY $LH $FLH $DOMAIN $CATEGORY $CLASSBASE @LANGS);
+use vars qw(%LHS $_EMPTY $LH $DOMAIN $CATEGORY $CLASSBASE @LANGS);
 use vars qw(@SYSTEM_LOCALEDIRS);
 use vars qw(%VARS $ENCODING $KEY_ENCODING $ENCODE_FAILURE $DIE_FOR_LOOKUP_FAILURES);
 %LHS = qw();
-# The internal auto/empty lexicons from Locale::Maketext::Gettext
-$_AUTO = $Locale::Maketext::Gettext::_AUTO;
-$_EMPTY = $Locale::Maketext::Gettext::_EMPTY;
-$FLH = $_AUTO;
 # The category is always LC_MESSAGES
 $CATEGORY = "LC_MESSAGES";
 $CLASSBASE = "Locale::Maketext::Gettext::_runtime";
@@ -113,7 +110,7 @@ sub get_handle(@) {
 
 # maketext: Maketext, in its long name
 sub maketext(@) {
-    return __(@_);
+    return __($_[0], @_[1..$#_]);
 }
 
 # __: Maketext, in its shortcut name
@@ -121,29 +118,20 @@ sub __(@) {
     local ($_, %_);
     my ($key, @param, $encoding, $lh_encoding, $key_encoding);
     ($key, @param) = @_;
-    # Encode the source text
-    $key = decode($KEY_ENCODING, $key, $ENCODE_FAILURE)
-        if defined $KEY_ENCODING;
     # Reset the current language handle if it is not set yet
     _get_handle() if !defined $LH;
     
-    # Lookup failures.  Let the fail handler take over
-    if (!exists ${$LH->{"Lexicon"}}{$key}) {
-        $_ = $FLH->maketext($key, @param);
-        # Output to the requested encoding
-        if (exists $VARS{"ENCODING"}) {
-            $_ = encode($VARS{"ENCODING"}, $_, $ENCODE_FAILURE)
-                if defined $VARS{"ENCODING"};
-        # Turn back to the encoding of the source text
-        } elsif (defined $KEY_ENCODING) {
-            $_ = encode($KEY_ENCODING, $_, $ENCODE_FAILURE);
-        }
-    # Process with the ordinary maketext
-    } else {
-        $_ = $LH->maketext($key, @param);
-        # Output to the requested encoding
-        $_ = encode($VARS{"ENCODING"}, $_, $ENCODE_FAILURE)
-            if defined $VARS{"ENCODING"};
+    # Decode the source text
+    $key = decode($KEY_ENCODING, $key, $ENCODE_FAILURE)
+        if defined $KEY_ENCODING;
+    # Maketext
+    $_ = $LH->maketext($key, @param);
+    # Output to the requested encoding
+    if (exists $VARS{"ENCODING"}) {
+        $_ = encode($VARS{"ENCODING"}, $_, $ENCODE_FAILURE);
+    # Pass through the empty/invalid lexicon
+    } elsif (scalar(keys %{$LH->{"Lexicon"}}) == 0 && defined $KEY_ENCODING) {
+        $_ = encode($KEY_ENCODING, $_, $ENCODE_FAILURE);
     }
     
     return $_;
@@ -187,19 +175,17 @@ sub encoding(;$) {
     my ($new_encoding);
     $new_encoding = $_[0];
     # Return the current encoding
-    $VARS{"ENCODING"} = $new_encoding if @_ > 0;
+    if (@_ > 0) {
+        if (defined $new_encoding) {
+            $VARS{"ENCODING"} = $new_encoding;
+        } else {
+            delete $VARS{"ENCODING"};
+        }
+        $VARS{"ENCODING_SET"} = 1;
+    }
     # Set and return the current output encoding
     return $VARS{"ENCODING"} if exists $VARS{"ENCODING"};
     return undef;
-    
-    ## Return the current encoding
-    #if (@_ < 1) {
-    #    return $ENCODING if defined $ENCODING;
-    #    return undef if !defined $LH;
-    #    return $LH->encoding;
-    #}
-    ## Set and return the current output encoding
-    #return ($ENCODING = $new_encoding);
 }
 
 # key_encoding: Set the encoding of the original text
@@ -230,13 +216,8 @@ sub die_for_lookup_failures(;$) {
     $_ = $_[0];
     # Set the current setting
     if (@_ > 0) {
-        if ($_) {
-            $FLH = $_EMPTY;
-            $DIE_FOR_LOOKUP_FAILURES = 1;
-        } else {
-            $FLH = $_AUTO;
-            $DIE_FOR_LOOKUP_FAILURES = 0;
-        }
+        $DIE_FOR_LOOKUP_FAILURES = $_? 1: 0;
+        $LH->die_for_lookup_failures($DIE_FOR_LOOKUP_FAILURES);
     }
     # Return the current setting
     # Resetting the current language handle is not required
@@ -353,19 +334,18 @@ sub _get_handle() {
     my ($k, $class, $subclass);
     
     # Lexicon empty if text domain not specified, or not binded yet
-    return _lang($LH = $_EMPTY)
-        if !defined $DOMAIN || !exists $LOCALEDIRS{$DOMAIN};
+    return _get_empty_handle if !defined $DOMAIN || !exists $LOCALEDIRS{$DOMAIN};
     # Obtain the registry key
     $k = _k($DOMAIN);
     # Lexicon empty if text domain was not properly set yet
-    return _lang($LH = $_EMPTY) if !exists $CLASSES{$k};
+    return _get_empty_handle if !exists $CLASSES{$k};
     
     # Get the localization class name
     $class = $CLASSES{$k};
     # Get the language handle
     $LH = $class->get_handle(@LANGS);
     # Lexicon empty if failed get_handle()
-    return _lang($LH = $_EMPTY) if !defined $LH;
+    return _get_empty_handle if !defined $LH;
     
     # Obtain the subclass name of the got language handle
     $subclass = ref($LH);
@@ -373,18 +353,46 @@ sub _get_handle() {
     # the initialization overhead
     if (exists $LHS{$subclass}) {
         $LH = $LHS{$subclass};
-        $VARS{"ENCODING"} = $LH->{"MO_ENCODING"} if !exists $VARS{"MO_ENCODING"};
+        if (!exists $VARS{"ENCODING_SET"}) {
+            if (exists $LH->{"MO_ENCODING"}) {
+                $VARS{"ENCODING"} = $LH->{"MO_ENCODING"};
+            } else {
+                delete $VARS{"ENCODING"};
+            }
+        }
         return _lang($LH)
     }
     
     # Initialize it
     $LH->bindtextdomain($DOMAIN, $LOCALEDIRS{$DOMAIN});
     $LH->textdomain($DOMAIN);
-    $VARS{"ENCODING"} = $LH->{"MO_ENCODING"} if !exists $VARS{"MO_ENCODING"};
+    # Respect the MO file encoding unless there is a user preferrence
+    if (!exists $VARS{"ENCODING_SET"}) {
+        if (exists $LH->{"MO_ENCODING"}) {
+            $VARS{"ENCODING"} = $LH->{"MO_ENCODING"};
+        } else {
+            delete $VARS{"ENCODING"};
+        }
+    }
+    # We handle the encoding() and key_encoding() ourselves.
+    $LH->key_encoding(undef);
     $LH->encoding(undef);
     # Register it
     $LHS{$subclass} = $LH;
     
+    return _lang($LH);
+}
+
+# _get_empty_handle: Obtain the empty language handle
+sub _get_empty_handle() {
+    local ($_, %_);
+    if (!defined $_EMPTY) {
+        $_EMPTY = Locale::Maketext::Gettext::Functions::_EMPTY->get_handle;
+        $_EMPTY->key_encoding(undef);
+        $_EMPTY->encoding(undef);
+    }
+    $LH = $_EMPTY;
+    $LH->die_for_lookup_failures($DIE_FOR_LOOKUP_FAILURES);
     return _lang($LH);
 }
 
@@ -432,6 +440,23 @@ sub _lang($) {
     s/_/-/g;
     return $_;
 }
+
+# Public empty lexicon
+package Locale::Maketext::Gettext::Functions::_EMPTY;
+use 5.008;
+use strict;
+use warnings;
+use base qw(Locale::Maketext::Gettext);
+use vars qw($VERSION @ISA %Lexicon);
+$VERSION = 0.01;
+
+package Locale::Maketext::Gettext::Functions::_EMPTY::i_default;
+use 5.008;
+use strict;
+use warnings;
+use base qw(Locale::Maketext::Gettext);
+use vars qw($VERSION @ISA %Lexicon);
+$VERSION = 0.01;
 
 return 1;
 
@@ -697,7 +722,7 @@ imacat <imacat@mail.imacat.idv.tw>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
+Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 

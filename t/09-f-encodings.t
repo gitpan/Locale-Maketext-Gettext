@@ -58,6 +58,7 @@ $r = eval {
     encoding("Big5");
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 5
@@ -74,6 +75,7 @@ $r = eval {
     encoding("UTF-8");
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 7
@@ -90,6 +92,7 @@ $r = eval {
     encoding("UTF-16LE");
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 9
@@ -120,6 +123,7 @@ $r = eval {
     encoding("UTF-8");
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 13
@@ -136,6 +140,7 @@ $r = eval {
     encoding("Big5");
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 15
@@ -152,6 +157,7 @@ $r = eval {
     encoding("UTF-16LE");
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 17
@@ -183,6 +189,7 @@ $r = eval {
     encoding("GB2312");
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 21
@@ -200,6 +207,7 @@ $r = eval {
     encoding("GB2312");
     $_ = maketext("Every story has a happy ending.");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     return 1;
 };
 # 23
@@ -217,6 +225,7 @@ $r = eval {
     encode_failure(Encode::FB_CROAK);
     $_ = maketext("Every story has a happy ending.");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
     return 1;
 };
@@ -235,6 +244,7 @@ $r = eval {
     encode_failure(Encode::FB_HTMLCREF);
     $_ = maketext("Every story has a happy ending.");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
     return 1;
 };
@@ -252,6 +262,7 @@ $r = eval {
     encoding(undef);
     $_ = maketext("Hello, world!");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
     return 1;
 };
@@ -271,6 +282,7 @@ $r = eval {
     encoding(undef);
     $_ = maketext("Big watermelon");
     delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
+    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
     undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
     return 1;
 };

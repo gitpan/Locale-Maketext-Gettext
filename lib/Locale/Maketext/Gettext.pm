@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 0.18;
+$VERSION = 1.20;
 @EXPORT = qw(read_mo);
 @EXPORT_OK = @EXPORT;
 # Prototype declaration
@@ -21,11 +21,9 @@ use Encode qw(encode decode FB_DEFAULT);
 use File::Spec::Functions qw(catfile);
 no strict qw(refs);
 
-use vars qw(%Lexicons %ENCODINGS $REREAD_MO $MOFILE $_AUTO $_EMPTY);
+use vars qw(%Lexicons %ENCODINGS $REREAD_MO $MOFILE);
 $REREAD_MO = 0;
 $MOFILE = "";
-$_AUTO = Locale::Maketext::Gettext::_AUTO->get_handle;
-$_EMPTY = Locale::Maketext::Gettext::_EMPTY->get_handle;
 use vars qw(@SYSTEM_LOCALEDIRS);
 @SYSTEM_LOCALEDIRS = qw(/usr/share/locale /usr/lib/locale
     /usr/local/share/locale /usr/local/lib/locale);
@@ -40,7 +38,14 @@ sub encoding : method {
     return if ref($self) eq "";
     
     # Set the output encoding
-    $self->{"ENCODING"} = $_ if @_ > 1;
+    if (@_ > 1) {
+        if (defined $_) {
+            $self->{"ENCODING"} = $_;
+        } else {
+            delete $self->{"ENCODING"};
+        }
+        $self->{"ENCODING_SET"} = 1;
+    }
     
     # Return the current encoding
     return $self->{"ENCODING"} if exists $self->{"ENCODING"};
@@ -58,8 +63,11 @@ sub key_encoding : method {
     
     # Set the encoding used in the keys
     if (@_ > 1) {
-        $self->{"KEY_ENCODING"} = $_;
-        $self->{"ENCODING"} = $_ if !exists $self->{"ENCODING"};
+        if (defined $_) {
+            $self->{"KEY_ENCODING"} = $_;
+        } else {
+            delete $self->{"KEY_ENCODING"};
+        }
     }
     
     # Return the encoding
@@ -93,7 +101,7 @@ sub subclass_init : method {
     $self->{"REREAD_MO"} = $REREAD_MO;
     # Initialize the DIE_FOR_LOOKUP_FAILURES setting
     $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
-    $self->{"FLH"} = $_AUTO;
+    $self->fail_with("_lmg_failure_handler_auto");
     # Initialize the ENCODE_FAILURE setting
     $self->{"ENCODE_FAILURE"} = FB_DEFAULT;
     # Initialize the MOFILE value of this instance
@@ -203,17 +211,29 @@ sub textdomain : method {
             # Set the current encoding to the encoding of the MO file
             $_{$_} = decode($enc, $_{$_}) foreach keys %_;
         }
+        
         # Cache them
         $Lexicons{$MOfile} = \%_;
         $ENCODINGS{$MOfile} = $enc;
     }
     
     # Respect the existing output encoding
-    $self->{"MO_ENCODING"} = $ENCODINGS{$MOfile};
-    $self->{"ENCODING"} = $self->{"MO_ENCODING"}
-        if !exists $self->{"ENCODING"} && defined $ENCODINGS{$MOfile};
+    if (defined $ENCODINGS{$MOfile}) {
+        $self->{"MO_ENCODING"} = $ENCODINGS{$MOfile};
+    } else {
+        delete $self->{"MO_ENCODING"};
+    }
+    # Respect the MO file encoding unless there is a user preferrence
+    if (!exists $self->{"ENCODING_SET"}) {
+        if (exists $self->{"MO_ENCODING"}) {
+            $self->{"ENCODING"} = $self->{"MO_ENCODING"};
+        } else {
+            delete $self->{"ENCODING"};
+        }
+    }
     $self->{"Lexicon"} = $Lexicons{$MOfile};
     %{"$class\::Lexicon"} = %{$Lexicons{$MOfile}};
+    $self->clear_isa_scan;
     
     return $DOMAIN;
 }
@@ -247,29 +267,17 @@ sub maketext : method {
         %{"$class\::Lexicon"} = %{$self->{"Lexicon"}};
     }
     
-    # Process with the _AUTO lexicon for lookup failures
-    # Lookup failures
-    if (!exists ${$self->{"Lexicon"}}{$key}) {
-        # Decode the _AUTO lexicon first, in order for the _AUTO lexicon
-        #   to be multibyte-safe as possible.
-        $key = decode($self->{"KEY_ENCODING"}, $key, $self->{"ENCODE_FAILURE"});
-        # Maketext
-        $_ = $self->{"FLH"}->maketext($key, @param);
-        # Output to the requested encoding
-        if (exists $self->{"ENCODING"}) {
-            $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"})
-                if defined $self->{"ENCODING"};
-        # Return to the encoding of the source text
-        } elsif (defined $self->{"KEY_ENCODING"}) {
-            $_ = encode($self->{"KEY_ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
-        }
-    # Process with the ordinary maketext
-    } else {
-        # Maketext
-        $_ = $self->SUPER::maketext($key, @param);
-        # Output to the requested encoding
-        $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"})
-            if defined $self->{"ENCODING"};
+    # Decode the source text
+    $key = decode($self->{"KEY_ENCODING"}, $key, $self->{"ENCODE_FAILURE"})
+        if exists $self->{"KEY_ENCODING"};
+    # Maketext
+    $_ = $self->SUPER::maketext($key, @param);
+    # Output to the requested encoding
+    if (exists $self->{"ENCODING"}) {
+        $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
+    # Pass through the empty/invalid lexicon
+    } elsif (scalar(keys %{$self->{"Lexicon"}}) == 0 && exists $self->{"KEY_ENCODING"}) {
+        $_ = encode($self->{"KEY_ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
     }
     
     return $_;
@@ -366,10 +374,10 @@ sub die_for_lookup_failures : method {
     # Set the current setting
     if (@_ > 1) {
         if ($_) {
-            $self->{"FLH"} = $_EMPTY;
+            delete $self->{"fail"};
             $self->{"DIE_FOR_LOOKUP_FAILURES"} = 1;
         } else {
-            $self->{"FLH"} = $_AUTO;
+            $self->fail_with("_lmg_failure_handler_auto");
             $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
         }
     }
@@ -398,42 +406,45 @@ sub encode_failure : method {
     return undef;
 }
 
-# Public _AUTO lexicon -- process auto lexicon with it, but not the _AUTO
-#   lexicon entry, so that the compiled cache of %Lexicon can be preserved
-#   and reduce the memory-copy and compilation overhead
-package Locale::Maketext::Gettext::_AUTO;
-use 5.008;
-use strict;
-use warnings;
-use base qw(Locale::Maketext);
-use vars qw($VERSION @ISA %Lexicon);
-$VERSION = 0.01;
-
-package Locale::Maketext::Gettext::_AUTO::i_default;
-use 5.008;
-use strict;
-use warnings;
-use base qw(Locale::Maketext);
-use vars qw($VERSION @ISA %Lexicon);
-$VERSION = 0.01;
-%Lexicon = ( "_AUTO" => 1 );
-
-# Public empty lexicon
-package Locale::Maketext::Gettext::_EMPTY;
-use 5.008;
-use strict;
-use warnings;
-use base qw(Locale::Maketext);
-use vars qw($VERSION @ISA %Lexicon);
-$VERSION = 0.01;
-
-package Locale::Maketext::Gettext::_EMPTY::i_default;
-use 5.008;
-use strict;
-use warnings;
-use base qw(Locale::Maketext);
-use vars qw($VERSION @ISA %Lexicon);
-$VERSION = 0.01;
+# _lmg_failure_handler_auto: Our local version of failure_handler_auto(),
+#   Copied and rewritten from Locale::Maketext, with bug#33938 patch applied.
+#   See http://rt.perl.org/rt3//Public/Bug/Display.html?id=33938
+sub _lmg_failure_handler_auto : method {
+    local ($_, %_);
+    my ($self, $key, @param, $r);
+    ($self, $key, @param) = @_;
+    
+    $self->{"failure_lex"} = {} if !exists $self->{"failure_lex"};
+    ${$self->{"failure_lex"}}{$key} = $self->_compile($key)
+        if !exists ${$self->{"failure_lex"}}{$key};
+    $_ = ${$self->{"failure_lex"}}{$key};
+    
+    # A scalar result
+    return $$_ if ref($_) eq "SCALAR";
+    return $_ unless ref($_) eq "CODE";
+    # A compiled subroutine
+    {
+        local $SIG{"__DIE__"};
+        $r = eval {
+            $_ = &$_($self, @param);
+            return 1;
+        };
+    }
+    
+    # If we make it here, there was an exception thrown in the
+    #  call to $value, and so scream:
+    if (!defined $r) {
+        $_ = $@;
+        # pretty up the error message
+        s<\s+at\s+\(eval\s+\d+\)\s+line\s+(\d+)\.?\n?>
+            <\n in bracket code [compiled line $1],>s;
+        Carp::croak "Error in maketexting \"$key\":\n$_ as used";
+        return;
+    }
+    
+    # OK
+    return $_;
+}
 
 return 1;
 
@@ -732,7 +743,7 @@ imacat <imacat@mail.imacat.idv.tw>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
+Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 

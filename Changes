@@ -1,5 +1,76 @@
 Locale-Maketext-Gettext change log
 
+2007-03-28	version 1.20
+	Rewrite to follow the error handler design of Locale::Maketext, i.e.
+	the fail_with() method, instead of our own.
+	Clean up encoding mess.  You may need to check if your application
+	was depending on the previous wrong, hard-to-handle behavior on look
+	up failurs.  The new behavior should be easier to deal with.
+	 1. Gettext.pm: In the textdomain() function, make sure {"ENCODING"}
+	    is not set to undef when MO file does not exists.
+	 2. Functions.pm: In the encoding() function, removed a piece of long
+	    gone, commented code.
+	 3. Gettext.pm and Functions.pm: In the encoding(), textdomain() and
+	    the _get_handle() function, add a flag {"ENCODING_SET"} to tag if
+	    we should respect the encoding() setting of the user.  If there is
+	    no user preferred encoding(), when obtaining language handle with
+	    _get_handle() or textdomain(), encoding() will change to the
+	    output encoding() to that of the corresponding MO file.
+	 4. 09-f-encoding.t: Added "delete $VARS{"ENCODING_SET"}" in the end
+	    of each test to clean up the environment.
+	 5. Gettext.pm: Update the version number to 1.20.
+	 6. Functions.pm: Update the version number to 0.10.
+	 7. t/99-pod.t: Added.
+	 8. Makefile.PL: Stylish clean-up and update.  Added "SIGN".
+	 9. Build.PL: Added.
+
+2007-03-27
+	 1. Gettext.pm: Added _lmg_failure_handler_auto(), as a replacement
+	    of Locale::Maketext's failure_handler_auto().  Locale::Maketext's
+	    failure_handler_auto() until version 1.10 has problem with
+	    message keys without any brackets.  See bug#33938 on rt.cpan.org.
+	    It's content was simply copied from failure_handler_auto().
+	 2. Gettext.pm: Removed classes Locale::Maketext::Gettext::_AUTO,
+	    Locale::Maketext::Gettext::_AUTO::i_default,
+	    Locale::Maketext::Gettext::_EMPTY and
+	    Locale::Maketext::Gettext::_EMPTY::i_default.  We are using
+	    Locale::Maketext's fail_with() method to deal with look up errors
+	    rather than making dummy language handles and deal with them by
+	    ourselves.  This simplify things, making the code more compatible
+	    with Locale::Maketext.  As a result, Locale::Maketext's
+	    fail_with() method and {"fail"} attribute are working now.
+	 3. Gettext.pm: In the maketext() method, removed the code that deal
+	    with look up errors by ourselves.  Now we handle this with the
+	    {"fail"} attribute and the _lmg_failure_handler_auto() method,
+	    following the original Locale::Maketext's design.
+	 4. Gettext.pm: In the textdomain() method, added clear_isa_scan() in
+	    the end to clear the ISA handler look up cache table.  This way we
+	    are not affected by the cache of _lmg_failure_handler_auto()
+	    when switching domain with textdomain().
+	 5. Gettext.pm and Functions.pm: In encoding() and key_encoding(),
+	    feeding undef delete the property.  This is to unify the practice
+	    of "exists" and "defined" tests.  All tests should use "exists"
+	    instead of "defined" now.
+	 6. Functions.pm: Added classes
+	    Locale::Maketext::Gettext::Functions::_EMPTY and
+	    Locale::Maketext::Gettext::Functions::_EMPTY::i_default as a
+	    dummy locale.
+	 7. Functions.pm: Add _get_empty_handle() to return the dummy locale,
+	    with die_for_lookup_failures() properly set.  This replaces the
+	    $_EMPTY setting in the beginning of the file.
+	 8. Functions.pm: In the _get_handle() method added unset the
+	    key_encoding() before returning the language handle.
+	    key_encoding() is handled by Locale::Maketext::Gettext::Functions.
+	    Locale::Maketext::Gettext does not need to handle key_encoding().
+	    This is to follow the nature of functional API that
+	    key_encoding() should apply to all the following session in
+	    functional API.
+	 9. Gettext.pm and Functions.pm: In maketext(), stop playing magic
+	    with encoding() and key_encoding() that automatically encode()
+	    text back to key_encoding() when lookup fails.  The result is
+	    too unpredictable.  The application should specify which encoding
+	    they want themselves.
+
 2007-03-22	version 1.18
 	Fixes for Perl 5.9.  Locale::Maketext in Perl 5.9 does not set $@
 	as its error message.  Tests replying on $@ may fail for this.  But
