@@ -23,8 +23,8 @@ use vars qw($dir $domain $lang $skip);
 # bindtextdomain
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    $_ = bindtextdomain("test");
     Locale::Maketext::Gettext::Functions::_reset();
+    $_ = bindtextdomain("test");
     return 1;
 };
 # 1
@@ -35,9 +35,9 @@ ok($_, undef);
 # textdomain
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     $_ = textdomain;
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 3
@@ -48,8 +48,8 @@ ok($_, undef);
 # No text domain claimed yet
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    $_ = __("Hello, world!");
     Locale::Maketext::Gettext::Functions::_reset();
+    $_ = __("Hello, world!");
     return 1;
 };
 # 5
@@ -60,10 +60,10 @@ ok($_, "Hello, world!");
 # Non-existing LOCALEDIR
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", "/dev/null");
     textdomain("test");
     $_ = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 7
@@ -74,9 +74,9 @@ ok($_, "Hello, world!");
 # Not-registered DOMAIN
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     textdomain("not_registered");
     $_ = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 9
@@ -87,10 +87,10 @@ ok($_, "Hello, world!");
 # PO file not exists
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("no_such_domain", $LOCALEDIR);
     textdomain("no_such_domain");
     $_ = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 11
@@ -101,10 +101,10 @@ ok($_, "Hello, world!");
 # PO file invalid
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("bad", $LOCALEDIR);
     textdomain("bad");
     $_ = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 13
@@ -115,11 +115,11 @@ ok($_, "Hello, world!");
 # No such message
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = __("non-existing message");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 15
@@ -130,11 +130,11 @@ ok($_, "non-existing message");
 # get_handle before textdomain
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     get_handle("en");
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $_ = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 17
@@ -145,11 +145,11 @@ ok($_, "Hiya :)");
 # bindtextdomain after textdomain
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     get_handle("en");
     textdomain("test2");
     bindtextdomain("test2", $LOCALEDIR);
     $_ = __("Every story has a happy ending.");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 19
@@ -160,12 +160,12 @@ ok($_, "Pray it.");
 # multibyte keys
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     key_encoding("Big5");
     $_ = maketext("（未設定）");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 21
@@ -175,12 +175,12 @@ ok($_, "（未設定）");
 
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", "/dev/null");
     textdomain("test");
     get_handle("zh-tw");
     key_encoding("Big5");
     $_ = maketext("（未設定）");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 23
@@ -191,12 +191,12 @@ ok($_, "（未設定）");
 # Maketext before and after binding text domain
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     __("Hello, world!");
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 25
@@ -207,12 +207,12 @@ ok($_, "Hiya :)");
 # Switch to a domain that is not binded yet
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     get_handle("en");
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     textdomain("test2");
     $_ = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 27
@@ -223,11 +223,11 @@ ok($_, "Hello, world!");
 # N_: different context - string to array
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     @_ = N_("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 29
@@ -240,11 +240,11 @@ ok($_[1], undef);
 # N_: different context - array to string
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = N_("Hello, world!", "Cool!", "Big watermelon");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 32

@@ -27,6 +27,7 @@ use vars qw($dir1 $dir2 $dir3 $f1 $f11 $f12 $f2 $f21 $f3 $f31 $class);
 # dmaketext in the middle
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     get_handle("en");
     bindtextdomain("test", $LOCALEDIR);
     bindtextdomain("test2", $LOCALEDIR);
@@ -37,7 +38,6 @@ $r = eval {
     $_[3] = dmaketext("test2", "Every story has a happy ending.");
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 1
@@ -58,6 +58,7 @@ ok($_[5], "Every story has a happy ending.");
 # Switch between domains
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     bindtextdomain("test2", $LOCALEDIR);
     get_handle("en");
@@ -70,7 +71,6 @@ $r = eval {
     textdomain("test");
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 8
@@ -91,6 +91,7 @@ ok($_[5], "Every story has a happy ending.");
 # Switch between languages
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -99,7 +100,6 @@ $r = eval {
     $_[1] = __("Hello, world!");
     get_handle("zh-cn");
     $_[2] = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 15
@@ -114,6 +114,7 @@ ok($_[2], "大家好。");
 # Switch between languages - by environment
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "en";
@@ -125,7 +126,6 @@ $r = eval {
     $ENV{"LANG"} = "zh-cn";
     get_handle();
     $_[2] = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 19
@@ -140,6 +140,7 @@ ok($_[2], "大家好。");
 # Switch between different language methods
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -152,7 +153,6 @@ $r = eval {
     $ENV{"LANG"} = "en";
     get_handle();
     $_[3] = __("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 23
@@ -169,6 +169,7 @@ ok($_[3], "Hiya :)");
 # Reuse of a same text domain class
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     $ENV{"LANG"} = "en";
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
@@ -197,7 +198,6 @@ $r = eval {
     $_[8] = __("Every story has a happy ending.");
     $_[9] = ref($Locale::Maketext::Gettext::Functions::LH);
     $_[9] =~ s/^(.+)::.*?$/$1/;
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 28
@@ -224,6 +224,7 @@ ok($_[2], $_[9]);
 # Language addition/removal
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     $dir1 = catdir($LOCALEDIR, "en", "LC_MESSAGES");
     $dir2 = catdir($LOCALEDIR, "zh_TW", "LC_MESSAGES");
     $dir3 = catdir($LOCALEDIR, "zh_CN", "LC_MESSAGES");
@@ -277,7 +278,6 @@ $r = eval {
     unlink $f1;
     unlink $f2;
     unlink $f3;
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 38
@@ -306,6 +306,7 @@ ok($_[9], "Hello, world!");
 # Garbage collection - drop abandoned language handles
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     $dir1 = catdir($LOCALEDIR, "en", "LC_MESSAGES");
     $dir2 = catdir($LOCALEDIR, "zh_TW", "LC_MESSAGES");
     $dir3 = catdir($LOCALEDIR, "zh_CN", "LC_MESSAGES");
@@ -335,7 +336,6 @@ $r = eval {
     get_handle("zh-tw");
     get_handle("zh-cn");
     @_ = grep /^$class/, keys %Locale::Maketext::Gettext::Functions::LHS;
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 49
@@ -352,6 +352,7 @@ $r = eval {
     unlink $f1;
     copy $f11, $f1  or die "ERROR: $f11 $f1: $!";
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test_reload", $LOCALEDIR);
     textdomain("test_reload");
     get_handle("en");
@@ -365,7 +366,6 @@ $r = eval {
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
     unlink $f1;
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 51

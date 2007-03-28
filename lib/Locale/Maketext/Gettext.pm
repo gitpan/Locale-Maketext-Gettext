@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 1.21;
+$VERSION = 1.22;
 @EXPORT = qw(read_mo);
 @EXPORT_OK = @EXPORT;
 # Prototype declaration
@@ -773,7 +773,7 @@ L<Locale::Maketext::TPJ13(3)|Locale::Maketext::TPJ13/3>,
 L<Locale::Maketext::Lexicon(3)|Locale::Maketext::Lexicon/3>,
 L<Encode(3)|Encode/3>, L<bindtextdomain(3)|bindtextdomain/3>,
 L<textdomain(3)|textdomain/3>.  Also, please refer to the official GNU
-gettext manual at L<http://www.gnu.org/manual/gettext/>.
+gettext manual at L<http://www.gnu.org/software/gettext/manual/>.
 
 =head1 AUTHOR
 

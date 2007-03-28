@@ -12,7 +12,7 @@ use warnings;
 use Getopt::Long qw(GetOptions);
 use Locale::Maketext::Gettext::Functions;
 use vars qw($VERSION);
-$VERSION = 0.04;
+$VERSION = 0.05;
 # Prototype declaration
 sub main();
 sub parse_args();
@@ -126,10 +126,10 @@ like the command-line program gettext.
 
 For example:
 
-  % maketext -s "[*,_1,book,books]" 1
-  1 book
-  % maketext -s "[*,_1,book,books]" 24
-  24 books
+  % maketext -s "[*,_1,virus was,viruses were] found in [*,_2,file,files]." 0 1
+  0 viruses were found in 1 file.
+  % maketext -s "[*,_1,virus was,viruses were] found in [*,_2,file,files]." 1 3
+  1 virus was found in 3 files.
   %
 
 =head1 OPTIONS
@@ -200,7 +200,7 @@ L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3>,
 L<Locale::Maketext::Gettext::Functions(3)|Locale::Maketext::Gettext::Functions/3>,
 L<bindtextdomain(3)|bindtextdomain/3>, L<textdomain(3)|textdomain/3>.
 Also, please refer to the official GNU gettext manual at
-L<http://www.gnu.org/manual/gettext/|http://www.gnu.org/manual/gettext/>.
+L<http://www.gnu.org/software/gettext/manual/>.
 
 =head1 AUTHOR
 

@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.11;
+$VERSION = 0.12;
 @EXPORT = qw();
 push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
@@ -728,7 +728,7 @@ L<Locale::Maketext::TPJ13(3)|Locale::Maketext::TPJ13/3>,
 L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3>,
 L<bindtextdomain(3)|bindtextdomain/3>, L<textdomain(3)|textdomain/3>.
 Also, please refer to the official GNU gettext manual at
-L<http://www.gnu.org/manual/gettext/>.
+L<http://www.gnu.org/software/gettext/manual/>.
 
 =head1 AUTHOR
 

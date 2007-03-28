@@ -23,11 +23,11 @@ $LOCALEDIR = catdir($FindBin::Bin, "locale");
 # Find the default encoding
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = encoding();
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 1
@@ -39,11 +39,11 @@ ok($_, "US-ASCII");
 # Find the default encoding
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     $_ = encoding();
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 3
@@ -54,12 +54,12 @@ ok($_, "Big5");
 # Turn to Big5
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     encoding("Big5");
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 5
@@ -70,12 +70,12 @@ ok($_, "¤j®a¦n¡C");
 # Turn to UTF-8
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     encoding("UTF-8");
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 7
@@ -86,12 +86,12 @@ ok($_, "å¤§å®¶å¥½ã€‚");
 # Turn to UTF-16LE
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     encoding("UTF-16LE");
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 9
@@ -102,11 +102,11 @@ ok($_, "'Y¶[}Y0");
 # Find the default encoding, in UTF-8
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test_utf8", $LOCALEDIR);
     textdomain("test_utf8");
     get_handle("zh-tw");
     $_ = encoding();
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 11
@@ -117,12 +117,12 @@ ok($_, "UTF-8");
 # Turn to UTF-8
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test_utf8", $LOCALEDIR);
     textdomain("test_utf8");
     get_handle("zh-tw");
     encoding("UTF-8");
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 13
@@ -133,12 +133,12 @@ ok($_, "å¤§å®¶å¥½ã€‚");
 # Turn to Big5
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test_utf8", $LOCALEDIR);
     textdomain("test_utf8");
     get_handle("zh-tw");
     encoding("Big5");
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 15
@@ -149,12 +149,12 @@ ok($_, "¤j®a¦n¡C");
 # Turn to UTF-16LE
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test_utf8", $LOCALEDIR);
     textdomain("test_utf8");
     get_handle("zh-tw");
     encoding("UTF-16LE");
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 17
@@ -166,11 +166,11 @@ ok($_, "'Y¶[}Y0");
 # Simplified Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test_utf8", $LOCALEDIR);
     textdomain("test_utf8");
     get_handle("zh-cn");
     $_ = encoding();
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 19
@@ -181,12 +181,12 @@ ok($_, "UTF-8");
 # Turn to GB2312
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test_utf8", $LOCALEDIR);
     textdomain("test_utf8");
     get_handle("zh-cn");
     encoding("GB2312");
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 21
@@ -198,12 +198,12 @@ ok($_, "´ó¼ÒºÃ¡£");
 # FB_DEFAULT
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test2", $LOCALEDIR);
     textdomain("test2");
     get_handle("zh-tw");
     encoding("GB2312");
     $_ = maketext("Every story has a happy ending.");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 23
@@ -214,13 +214,13 @@ ok($_, "¹ÊÊÂ¶¼ÓÐÃÀ?µÄ?¾Ö¡£");
 # FB_CROAK
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test2", $LOCALEDIR);
     textdomain("test2");
     get_handle("zh-tw");
     encoding("GB2312");
     encode_failure(Encode::FB_CROAK);
     $_ = maketext("Every story has a happy ending.");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 25
@@ -231,13 +231,13 @@ ok($@, qr/does not map to/);
 # FB_HTMLCREF
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test2", $LOCALEDIR);
     textdomain("test2");
     get_handle("zh-tw");
     encoding("GB2312");
     encode_failure(Encode::FB_HTMLCREF);
     $_ = maketext("Every story has a happy ending.");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 27
@@ -248,12 +248,12 @@ ok($_, "¹ÊÊÂ¶¼ÓÐÃÀ&#40599;µÄ&#32080;¾Ö¡£");
 # Return the unencoded UTF-8 text
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     encoding(undef);
     $_ = maketext("Hello, world!");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 29
@@ -266,12 +266,12 @@ ok((Encode::is_utf8($_)? "utf8": "non-utf8"), "utf8");
 # Return the unencoded UTF-8 text with auto lexicon
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     encoding(undef);
     $_ = maketext("Big watermelon");
-    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 32

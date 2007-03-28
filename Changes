@@ -1,5 +1,15 @@
 Locale-Maketext-Gettext change log
 
+2007-03-28	version 1.22
+	 1. t/*-f-*.t: Moved Locale::Maketext::Gettext::Functions::_reset()
+	    from the end of each set of tests, to the front of each set of
+	    tests.  If at the end of the test set, it would not be run if
+	    the eval{} block fails.
+	 2. Gettext.pm, Functions.pm and maketext: Updated the URL of the
+	    GNU gettext manual in the their POD documents.
+	 3. Functions.pm: The example in its POD document is updated to show
+	    more of the nature of Locale::Maketext.
+
 2007-03-28	version 1.21
 	 1. 04-encodings.t and 09-f-encodings.t: Inserted test#26 to test the
 	    $@ error message.  It is an encode() error that is not affected
