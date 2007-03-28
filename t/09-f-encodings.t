@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 33 }
+BEGIN { plan tests => 34 }
 
 use Encode qw();
 use FindBin;
@@ -27,6 +27,7 @@ $r = eval {
     textdomain("test");
     get_handle("en");
     $_ = encoding();
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 1
@@ -41,7 +42,8 @@ $r = eval {
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
-    $_ = encoding;
+    $_ = encoding();
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 3
@@ -57,8 +59,7 @@ $r = eval {
     get_handle("zh-tw");
     encoding("Big5");
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 5
@@ -74,8 +75,7 @@ $r = eval {
     get_handle("zh-tw");
     encoding("UTF-8");
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 7
@@ -91,8 +91,7 @@ $r = eval {
     get_handle("zh-tw");
     encoding("UTF-16LE");
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 9
@@ -106,7 +105,8 @@ $r = eval {
     bindtextdomain("test_utf8", $LOCALEDIR);
     textdomain("test_utf8");
     get_handle("zh-tw");
-    $_ = encoding;
+    $_ = encoding();
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 11
@@ -122,8 +122,7 @@ $r = eval {
     get_handle("zh-tw");
     encoding("UTF-8");
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 13
@@ -139,8 +138,7 @@ $r = eval {
     get_handle("zh-tw");
     encoding("Big5");
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 15
@@ -156,8 +154,7 @@ $r = eval {
     get_handle("zh-tw");
     encoding("UTF-16LE");
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 17
@@ -173,6 +170,7 @@ $r = eval {
     textdomain("test_utf8");
     get_handle("zh-cn");
     $_ = encoding();
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 19
@@ -188,8 +186,7 @@ $r = eval {
     get_handle("zh-cn");
     encoding("GB2312");
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 21
@@ -206,8 +203,7 @@ $r = eval {
     get_handle("zh-tw");
     encoding("GB2312");
     $_ = maketext("Every story has a happy ending.");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 23
@@ -224,15 +220,13 @@ $r = eval {
     encoding("GB2312");
     encode_failure(Encode::FB_CROAK);
     $_ = maketext("Every story has a happy ending.");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
-    undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
-# To be refined - to know that we failed at maketext()
-# was ok($@, qr/does not map to/);
 # 25
 ok($r, undef);
+# 26
+ok($@, qr/does not map to/);
 
 # FB_HTMLCREF
 $r = eval {
@@ -243,14 +237,12 @@ $r = eval {
     encoding("GB2312");
     encode_failure(Encode::FB_HTMLCREF);
     $_ = maketext("Every story has a happy ending.");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
-    undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
-# 26
-ok($r, 1);
 # 27
+ok($r, 1);
+# 28
 ok($_, "故事都有美&#40599;的&#32080;局。");
 
 # Return the unencoded UTF-8 text
@@ -261,16 +253,14 @@ $r = eval {
     get_handle("zh-tw");
     encoding(undef);
     $_ = maketext("Hello, world!");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
-    undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
-# 28
-ok($r, 1);
 # 29
-ok($_, "\x{5927}\x{5BB6}\x{597D}\x{3002}");
+ok($r, 1);
 # 30
+ok($_, "\x{5927}\x{5BB6}\x{597D}\x{3002}");
+# 31
 ok((Encode::is_utf8($_)? "utf8": "non-utf8"), "utf8");
 
 # Return the unencoded UTF-8 text with auto lexicon
@@ -281,14 +271,12 @@ $r = eval {
     get_handle("zh-tw");
     encoding(undef);
     $_ = maketext("Big watermelon");
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING"};
-    delete $Locale::Maketext::Gettext::Functions::VARS{"ENCODING_SET"};
-    undef $Locale::Maketext::Gettext::Functions::ENCODE_FAILURE;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
-# 31
-ok($r, 1);
 # 32
-ok($_, "Big watermelon");
+ok($r, 1);
 # 33
+ok($_, "Big watermelon");
+# 34
 ok((Encode::is_utf8($_)? "utf8": "non-utf8"), "utf8");

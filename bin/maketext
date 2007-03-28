@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 # Command-line interface to Locale::Maketext::Gettext (and Locale::Maketext)
 
-# Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 # First written: 2003-05-03
@@ -12,7 +12,7 @@ use warnings;
 use Getopt::Long qw(GetOptions);
 use Locale::Maketext::Gettext::Functions;
 use vars qw($VERSION);
-$VERSION = 0.03;
+$VERSION = 0.04;
 # Prototype declaration
 sub main();
 sub parse_args();
@@ -74,15 +74,16 @@ sub parse_args() {
     local ($_, %_);
     
     # Get the arguments 取得參數
-    eval {
+    $_ = eval {
         local $SIG{__WARN__} = sub { die $_[0]; };
         Getopt::Long::Configure("no_auto_abbrev");
         GetOptions( "domain|d=s"=>\$DOMAIN,
                     "s"=>sub { $ECHO = 1; },
                     "help|h"=>sub { print $HELP; exit 0; },
                     "version|V"=>sub { print "$VERSTR\n"; exit 0; });
+        return 1;
     };
-    die "$THIS_FILE: $@\n" if $@ ne "";
+    die "$THIS_FILE: $@" if !defined $_;
     
     # The MSGKEY
     die "$THIS_FILE: missing arguments\n" if @ARGV == 0;
@@ -122,6 +123,14 @@ scripts, etc, to translate, maketext and return the result.  By this
 way, it enables Maketext to be integrated into other programming
 languages/systems, like bash/csh, python, PHP, C, etc.  It works
 like the command-line program gettext.
+
+For example:
+
+  % maketext -s "[*,_1,book,books]" 1
+  1 book
+  % maketext -s "[*,_1,book,books]" 24
+  24 books
+  %
 
 =head1 OPTIONS
 
@@ -199,7 +208,7 @@ imacat <imacat@mail.imacat.idv.tw>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003-2005 imacat. All rights reserved. This program is free
+Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 

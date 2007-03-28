@@ -1,8 +1,8 @@
 --- #YAML:1.0
 name:                Locale-Maketext-Gettext
-version:             1.20
+version:             1.21
 abstract:            Joins gettext and Maketext frameworks
-license:             ~
+license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32
 distribution_type:   module
 requires:     

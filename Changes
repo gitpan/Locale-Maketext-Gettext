@@ -1,5 +1,66 @@
 Locale-Maketext-Gettext change log
 
+2007-03-28	version 1.21
+	 1. 04-encodings.t and 09-f-encodings.t: Inserted test#26 to test the
+	    $@ error message.  It is an encode() error that is not affected
+	    by the Locale::Maketext $@ change with "local $@".
+	 2. 06-racing.t: Added $LOOKUP_FAILURE as look-up failure flag.  Added
+	    a simple subroutine to handle lookup failure.  Test that to see if
+	    we are really die from lookup failure.
+	 3. Gettext.pm, Functions.pm and 09-f-encodings.t: Renamed
+	    ENCODING_SET to USERSET_ENCODING.  USERSET_ENCODING is set to
+	    the encoding user specified.  Future test should use "exists",
+	    but not "defined", as user may supply undef on this.
+	 4. Gettext.pm: Renaming _lmg_failure_handler_auto() to
+	    failure_handler_auto().  It should be OK to override it, and this
+	    help subclasses to employ our version.
+	 5. Functions.pm: Note why we don't use $@ but @ as the prototypes of
+	    __(), N_(), maketext().
+	 6. Functions.pm: Removed unused global variable $ENCODING.
+	 7. Functions.pm: Renamed %VARS to %PARAMS.  Changed $KEY_ENCODING
+	    to $PARAMS{"KEY_ENCODING"}.  Changed $DIE_FOR_LOOKUP_FAILURES to
+	    $PARAMS{"DIE_FOR_LOOKUP_FAILURES"}.  Changed $ENCODE_FAILURE to
+	    $PARAMS{"ENCODE_FAILURE"}.
+	 8. Gettext.pm and Functions.pm: Changed the returning line of
+	    encoding(), key_encoding() and die_for_lookup_failures() to one
+	    conditional line.  This is more neat.
+	 9. Functions.pm: Updated _reset(), resetting $PARAMS{"KEY_ENCODING"} to
+	    "US-ASCII" instead of undef, add resetting
+	    $PARAMS{"DIE_FOR_LOOKUP_FAILURES"} to 0;
+	10. Gettext.pm: Updated failure_handler_auto(), check if this method
+	    is revoked statically.
+	11. t/*-f-*.t: Added Locale::Maketext::Gettext::Functions::_reset() to
+	    the end of each set of tests, to reset the environment.
+	12. Gettext.pm: Added fail_with() as a wrapper to record the user set
+	    lookup failure handler, so that we can safely switch with
+	    die_for_lookup_failures().  A new attribute {"USERSET_FAIL"} is
+	    added to record it.  All references to fail_with() in other places
+	    of the code are changed to SUPER::fail_with().  fail_with() is
+	    only for the user since it will update the registered user
+	    preference.
+	13. Gettext.pm and Functions.pm: In maketext(), check if the key is
+	    Perl utf8 text with Encode::is_utf8() first before decode() the
+	    key, so that user can safely run a multibyte-awared script.
+	14. Gettext.pm and Functions.pm: In maketext(), check if the key is
+	    Perl utf8 text with Encode::is_utf8() first before encode(), for
+	    empty/invalid lexicon with key_encoding() set but no output
+	    encoding, so that we can have a real pass through.  In the case
+	    of an empty/invalid lexicon, the user should be responsible for
+	    the output encoding.  Added $keyd as the decoded() $key, so
+	    that we can check the original $key later.
+	15. Functions.pm: In __(), removed unused variables $encoding,
+	    $lh_encoding and $key_encoding.
+	16. maketext: In parse_args(), check the return value of the eval { }
+	    block instead of $@, and remove the extra new line when outputing
+	    the error in $@.
+	17. maketext: Added an example at the DESCRIPTION chapter of the
+	    POD documentation.
+	18. Gettext.pm: Added a note on the relation of fail_with()
+	    die_for_lookup_failures() at the description of the
+	    die_for_lookup_failures() method at the METHODS section
+	    of the POD documentation.
+	19. Makefile.PL: Added LICENSE attribute as "perl".
+
 2007-03-28	version 1.20
 	Rewrite to follow the error handler design of Locale::Maketext, i.e.
 	the fail_with() method, instead of our own.

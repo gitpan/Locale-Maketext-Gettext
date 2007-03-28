@@ -5,9 +5,10 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME        => "Locale-Maketext-Gettext",
-    VERSION     => "1.20",
+    VERSION     => "1.21",
     ABSTRACT    => "Joins gettext and Maketext frameworks",
     AUTHOR      => "imacat <imacat\@mail.imacat.idv.tw>",
+    LICENSE     => "perl",
     PREREQ_PM   => { },
     SIGN        => 1,
     

@@ -24,8 +24,8 @@ delete $ENV{$_}
 # bindtextdomain
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     $_ = bindtextdomain("test", $LOCALEDIR);
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 1
@@ -36,9 +36,9 @@ ok($_, $LOCALEDIR);
 # textdomain
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     $_ = textdomain("test");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 3
@@ -49,10 +49,10 @@ ok($_, "test");
 # get_handle
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 5
@@ -61,11 +61,11 @@ ok($r, 1);
 # maketext
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = maketext("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 6
@@ -76,11 +76,11 @@ ok($_, "Hiya :)");
 # __ (shortcut to maketext)
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 8
@@ -91,11 +91,11 @@ ok($_, "Hiya :)");
 # N_ (do nothing)
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = N_("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 10
@@ -106,12 +106,12 @@ ok($_, "Hello, world!");
 # N_ (do nothing)
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     # ゅ硂采﹁ナ :p From: 芖臨艵
     @_ = N_("Hello, world!", "Cool!", "Big watermelon");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 12
@@ -125,11 +125,11 @@ ok($_[2], "Big watermelon");
 
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = N_("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 16
@@ -141,11 +141,11 @@ ok($_, "Hello, world!");
 # English
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 18
@@ -156,11 +156,11 @@ ok($_, "Hiya :)");
 # Traditional Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 20
@@ -171,11 +171,11 @@ ok($_, "產");
 # Simplified Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-cn");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 22
@@ -187,12 +187,12 @@ ok($_, "大家好。");
 # English
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "en";
     get_handle();
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 24
@@ -203,12 +203,12 @@ ok($_, "Hiya :)");
 # Traditional Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "zh-tw";
     get_handle();
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 26
@@ -219,12 +219,12 @@ ok($_, "產");
 # Simplified Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "zh-cn";
     get_handle();
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 28

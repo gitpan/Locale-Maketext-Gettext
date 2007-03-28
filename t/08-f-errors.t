@@ -24,6 +24,7 @@ use vars qw($dir $domain $lang $skip);
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     $_ = bindtextdomain("test");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 1
@@ -36,6 +37,7 @@ $r = eval {
     use Locale::Maketext::Gettext::Functions;
     bindtextdomain("test", $LOCALEDIR);
     $_ = textdomain;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 3
@@ -47,6 +49,7 @@ ok($_, undef);
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 5
@@ -60,6 +63,7 @@ $r = eval {
     bindtextdomain("test", "/dev/null");
     textdomain("test");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 7
@@ -72,6 +76,7 @@ $r = eval {
     use Locale::Maketext::Gettext::Functions;
     textdomain("not_registered");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 9
@@ -85,6 +90,7 @@ $r = eval {
     bindtextdomain("no_such_domain", $LOCALEDIR);
     textdomain("no_such_domain");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 11
@@ -98,6 +104,7 @@ $r = eval {
     bindtextdomain("bad", $LOCALEDIR);
     textdomain("bad");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 13
@@ -112,6 +119,7 @@ $r = eval {
     textdomain("test");
     get_handle("en");
     $_ = __("non-existing message");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 15
@@ -126,6 +134,7 @@ $r = eval {
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 17
@@ -140,6 +149,7 @@ $r = eval {
     textdomain("test2");
     bindtextdomain("test2", $LOCALEDIR);
     $_ = __("Every story has a happy ending.");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 19
@@ -155,7 +165,7 @@ $r = eval {
     get_handle("zh-tw");
     key_encoding("Big5");
     $_ = maketext("（未設定）");
-    undef $Locale::Maketext::Gettext::Functions::KEY_ENCODING;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 21
@@ -170,7 +180,7 @@ $r = eval {
     get_handle("zh-tw");
     key_encoding("Big5");
     $_ = maketext("（未設定）");
-    undef $Locale::Maketext::Gettext::Functions::KEY_ENCODING;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 23
@@ -186,6 +196,7 @@ $r = eval {
     textdomain("test");
     get_handle("en");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 25
@@ -201,6 +212,7 @@ $r = eval {
     textdomain("test");
     textdomain("test2");
     $_ = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 27
@@ -215,6 +227,7 @@ $r = eval {
     textdomain("test");
     get_handle("en");
     @_ = N_("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 29
@@ -231,6 +244,7 @@ $r = eval {
     textdomain("test");
     get_handle("en");
     $_ = N_("Hello, world!", "Cool!", "Big watermelon");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 32

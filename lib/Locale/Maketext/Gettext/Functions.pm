@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.10;
+$VERSION = 0.11;
 @EXPORT = qw();
 push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
@@ -45,9 +45,8 @@ use Encode qw(encode decode from_to FB_DEFAULT);
 use File::Spec::Functions qw(catdir catfile);
 use Locale::Maketext::Gettext qw(read_mo);
 use vars qw(%LOCALEDIRS %RIDS %CLASSES %LANGS);
-use vars qw(%LHS $_EMPTY $LH $DOMAIN $CATEGORY $CLASSBASE @LANGS);
+use vars qw(%LHS $_EMPTY $LH $DOMAIN $CATEGORY $CLASSBASE @LANGS %PARAMS);
 use vars qw(@SYSTEM_LOCALEDIRS);
-use vars qw(%VARS $ENCODING $KEY_ENCODING $ENCODE_FAILURE $DIE_FOR_LOOKUP_FAILURES);
 %LHS = qw();
 # The category is always LC_MESSAGES
 $CATEGORY = "LC_MESSAGES";
@@ -55,10 +54,10 @@ $CLASSBASE = "Locale::Maketext::Gettext::_runtime";
 # Current language parameters
 @LANGS = qw();
 @SYSTEM_LOCALEDIRS = @Locale::Maketext::Gettext::SYSTEM_LOCALEDIRS;
-%VARS = qw();
-$KEY_ENCODING = "US-ASCII";
-$ENCODE_FAILURE = FB_DEFAULT;
-$DIE_FOR_LOOKUP_FAILURES = 0;
+%PARAMS = qw();
+$PARAMS{"KEY_ENCODING"} = "US-ASCII";
+$PARAMS{"ENCODE_FAILURE"} = FB_DEFAULT;
+$PARAMS{"DIE_FOR_LOOKUP_FAILURES"} = 0;
 # Parameters for random class IDs
 use vars qw($RID_LEN @RID_CHARS);
 $RID_LEN = 8;
@@ -109,29 +108,34 @@ sub get_handle(@) {
 }
 
 # maketext: Maketext, in its long name
+#   Use @ instead of $@ in prototype, so that we can pass @_ to it.
 sub maketext(@) {
     return __($_[0], @_[1..$#_]);
 }
 
 # __: Maketext, in its shortcut name
+#   Use @ instead of $@ in prototype, so that we can pass @_ to it.
 sub __(@) {
     local ($_, %_);
-    my ($key, @param, $encoding, $lh_encoding, $key_encoding);
+    my ($key, @param, $keyd);
     ($key, @param) = @_;
     # Reset the current language handle if it is not set yet
     _get_handle() if !defined $LH;
     
     # Decode the source text
-    $key = decode($KEY_ENCODING, $key, $ENCODE_FAILURE)
-        if defined $KEY_ENCODING;
+    $keyd = $key;
+    $keyd = decode($PARAMS{"KEY_ENCODING"}, $keyd, $PARAMS{"ENCODE_FAILURE"})
+        if exists $PARAMS{"KEY_ENCODING"} && !Encode::is_utf8($key);
     # Maketext
-    $_ = $LH->maketext($key, @param);
+    $_ = $LH->maketext($keyd, @param);
     # Output to the requested encoding
-    if (exists $VARS{"ENCODING"}) {
-        $_ = encode($VARS{"ENCODING"}, $_, $ENCODE_FAILURE);
+    if (exists $PARAMS{"ENCODING"}) {
+        $_ = encode($PARAMS{"ENCODING"}, $_, $PARAMS{"ENCODE_FAILURE"});
     # Pass through the empty/invalid lexicon
-    } elsif (scalar(keys %{$LH->{"Lexicon"}}) == 0 && defined $KEY_ENCODING) {
-        $_ = encode($KEY_ENCODING, $_, $ENCODE_FAILURE);
+    } elsif (   scalar(keys %{$LH->{"Lexicon"}}) == 0
+                && exists $PARAMS{"KEY_ENCODING"}
+                && !Encode::is_utf8($key)) {
+        $_ = encode($PARAMS{"KEY_ENCODING"}, $_, $PARAMS{"ENCODE_FAILURE"});
     }
     
     return $_;
@@ -139,6 +143,7 @@ sub __(@) {
 
 # N_: Return the original text untouched, so that it can be catched
 #     with xgettext
+#   Use @ instead of $@ in prototype, so that we can pass @_ to it.
 sub N_(@) {
     # Watch out for this perl magic! :p
     return $_[0] unless wantarray;
@@ -172,30 +177,38 @@ sub reload_text() {
 # encoding: Set the output encoding
 sub encoding(;$) {
     local ($_, %_);
-    my ($new_encoding);
-    $new_encoding = $_[0];
-    # Return the current encoding
+    $_ = $_[0];
+    
+    # Set the output encoding
     if (@_ > 0) {
-        if (defined $new_encoding) {
-            $VARS{"ENCODING"} = $new_encoding;
+        if (defined $_) {
+            $PARAMS{"ENCODING"} = $_;
         } else {
-            delete $VARS{"ENCODING"};
+            delete $PARAMS{"ENCODING"};
         }
-        $VARS{"ENCODING_SET"} = 1;
+        $PARAMS{"USERSET_ENCODING"} = $_;
     }
-    # Set and return the current output encoding
-    return $VARS{"ENCODING"} if exists $VARS{"ENCODING"};
-    return undef;
+    
+    # Return the encoding
+    return exists $PARAMS{"ENCODING"}? $PARAMS{"ENCODING"}: undef;
 }
 
 # key_encoding: Set the encoding of the original text
 sub key_encoding(;$) {
     local ($_, %_);
     $_ = $_[0];
+    
     # Set the encoding used in the keys
-    $KEY_ENCODING = $_ if @_ > 0;
+    if (@_ > 0) {
+        if (defined $_) {
+            $PARAMS{"KEY_ENCODING"} = $_;
+        } else {
+            delete $PARAMS{"KEY_ENCODING"};
+        }
+    }
+    
     # Return the encoding
-    return $KEY_ENCODING;
+    return exists $PARAMS{"KEY_ENCODING"}? $PARAMS{"KEY_ENCODING"}: undef;
 }
 
 # encode_failure: What to do if the text is out of your output encoding
@@ -204,9 +217,9 @@ sub encode_failure(;$) {
     local ($_, %_);
     $_ = $_[0];
     # Set and return the current setting
-    $ENCODE_FAILURE = $_ if @_ > 0;
+    $PARAMS{"ENCODE_FAILURE"} = $_ if @_ > 0;
     # Return the current setting
-    return $ENCODE_FAILURE;
+    return $PARAMS{"ENCODE_FAILURE"};
 }
 
 # die_for_lookup_failures: Whether we should die for lookup failure
@@ -216,13 +229,13 @@ sub die_for_lookup_failures(;$) {
     $_ = $_[0];
     # Set the current setting
     if (@_ > 0) {
-        $DIE_FOR_LOOKUP_FAILURES = $_? 1: 0;
-        $LH->die_for_lookup_failures($DIE_FOR_LOOKUP_FAILURES);
+        $PARAMS{"DIE_FOR_LOOKUP_FAILURES"} = $_? 1: 0;
+        $LH->die_for_lookup_failures($PARAMS{"DIE_FOR_LOOKUP_FAILURES"});
     }
     # Return the current setting
     # Resetting the current language handle is not required
     # Lookup failures are handled by the fail handler directly
-    return $DIE_FOR_LOOKUP_FAILURES;
+    return $PARAMS{"DIE_FOR_LOOKUP_FAILURES"};
 }
 
 # _declare_class: Declare a class
@@ -353,11 +366,11 @@ sub _get_handle() {
     # the initialization overhead
     if (exists $LHS{$subclass}) {
         $LH = $LHS{$subclass};
-        if (!exists $VARS{"ENCODING_SET"}) {
+        if (!exists $PARAMS{"USERSET_ENCODING"}) {
             if (exists $LH->{"MO_ENCODING"}) {
-                $VARS{"ENCODING"} = $LH->{"MO_ENCODING"};
+                $PARAMS{"ENCODING"} = $LH->{"MO_ENCODING"};
             } else {
-                delete $VARS{"ENCODING"};
+                delete $PARAMS{"ENCODING"};
             }
         }
         return _lang($LH)
@@ -367,11 +380,11 @@ sub _get_handle() {
     $LH->bindtextdomain($DOMAIN, $LOCALEDIRS{$DOMAIN});
     $LH->textdomain($DOMAIN);
     # Respect the MO file encoding unless there is a user preferrence
-    if (!exists $VARS{"ENCODING_SET"}) {
+    if (!exists $PARAMS{"USERSET_ENCODING"}) {
         if (exists $LH->{"MO_ENCODING"}) {
-            $VARS{"ENCODING"} = $LH->{"MO_ENCODING"};
+            $PARAMS{"ENCODING"} = $LH->{"MO_ENCODING"};
         } else {
-            delete $VARS{"ENCODING"};
+            delete $PARAMS{"ENCODING"};
         }
     }
     # We handle the encoding() and key_encoding() ourselves.
@@ -392,7 +405,7 @@ sub _get_empty_handle() {
         $_EMPTY->encoding(undef);
     }
     $LH = $_EMPTY;
-    $LH->die_for_lookup_failures($DIE_FOR_LOOKUP_FAILURES);
+    $LH->die_for_lookup_failures($PARAMS{"DIE_FOR_LOOKUP_FAILURES"});
     return _lang($LH);
 }
 
@@ -404,9 +417,10 @@ sub _reset() {
     undef $LH;
     undef $DOMAIN;
     @LANGS = qw();
-    %VARS = qw();
-    undef $KEY_ENCODING;
-    $ENCODE_FAILURE = FB_DEFAULT;
+    %PARAMS = qw();
+    $PARAMS{"KEY_ENCODING"} = "US-ASCII";
+    $PARAMS{"ENCODE_FAILURE"} = FB_DEFAULT;
+    $PARAMS{"DIE_FOR_LOOKUP_FAILURES"} = 0;
     
     return;
 }

@@ -37,6 +37,7 @@ $r = eval {
     $_[3] = dmaketext("test2", "Every story has a happy ending.");
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 1
@@ -69,6 +70,7 @@ $r = eval {
     textdomain("test");
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 8
@@ -97,6 +99,7 @@ $r = eval {
     $_[1] = __("Hello, world!");
     get_handle("zh-cn");
     $_[2] = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 15
@@ -122,6 +125,7 @@ $r = eval {
     $ENV{"LANG"} = "zh-cn";
     get_handle();
     $_[2] = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 19
@@ -148,6 +152,7 @@ $r = eval {
     $ENV{"LANG"} = "en";
     get_handle();
     $_[3] = __("Hello, world!");
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 23
@@ -192,6 +197,7 @@ $r = eval {
     $_[8] = __("Every story has a happy ending.");
     $_[9] = ref($Locale::Maketext::Gettext::Functions::LH);
     $_[9] =~ s/^(.+)::.*?$/$1/;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 28
@@ -271,6 +277,7 @@ $r = eval {
     unlink $f1;
     unlink $f2;
     unlink $f3;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 38
@@ -328,6 +335,7 @@ $r = eval {
     get_handle("zh-tw");
     get_handle("zh-cn");
     @_ = grep /^$class/, keys %Locale::Maketext::Gettext::Functions::LHS;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 49
@@ -357,6 +365,7 @@ $r = eval {
     $_[4] = __("Hello, world!");
     $_[5] = __("Every story has a happy ending.");
     unlink $f1;
+    Locale::Maketext::Gettext::Functions::_reset();
     return 1;
 };
 # 51

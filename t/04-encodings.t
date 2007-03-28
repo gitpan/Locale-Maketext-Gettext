@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 33 }
+BEGIN { plan tests => 34 }
 
 use Encode qw();
 use FindBin qw();
@@ -210,10 +210,10 @@ $r = eval {
     $_ = $_->maketext("Every story has a happy ending.");
     return 1;
 };
-# To be refined - to know that we failed at maketext()
-# was ok($@, qr/does not map to/);
 # 25
 ok($r, undef);
+# 26
+ok($@, qr/does not map to/);
 
 # FB_HTMLCREF
 $r = eval {
@@ -226,9 +226,9 @@ $r = eval {
     $_ = $_->maketext("Every story has a happy ending.");
     return 1;
 };
-# 26
-ok($r, 1);
 # 27
+ok($r, 1);
+# 28
 ok($_, "故事都有美&#40599;的&#32080;局。");
 
 # Return the unencoded UTF-8 text
@@ -241,11 +241,11 @@ $r = eval {
     $_ = $_->maketext("Hello, world!");
     return 1;
 };
-# 28
-ok($r, 1);
 # 29
-ok($_, "\x{5927}\x{5BB6}\x{597D}\x{3002}");
+ok($r, 1);
 # 30
+ok($_, "\x{5927}\x{5BB6}\x{597D}\x{3002}");
+# 31
 ok((Encode::is_utf8($_)? "utf8": "non-utf8"), "utf8");
 
 # Return the unencoded UTF-8 text with auto lexicon
@@ -258,9 +258,9 @@ $r = eval {
     $_ = $_->maketext("Big watermelon");
     return 1;
 };
-# 31
-ok($r, 1);
 # 32
-ok($_, "Big watermelon");
+ok($r, 1);
 # 33
+ok($_, "Big watermelon");
+# 34
 ok((Encode::is_utf8($_)? "utf8": "non-utf8"), "utf8");

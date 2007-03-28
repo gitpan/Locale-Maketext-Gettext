@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 1.20;
+$VERSION = 1.21;
 @EXPORT = qw(read_mo);
 @EXPORT_OK = @EXPORT;
 # Prototype declaration
@@ -44,12 +44,11 @@ sub encoding : method {
         } else {
             delete $self->{"ENCODING"};
         }
-        $self->{"ENCODING_SET"} = 1;
+        $self->{"USERSET_ENCODING"} = $_;
     }
     
-    # Return the current encoding
-    return $self->{"ENCODING"} if exists $self->{"ENCODING"};
-    return undef;
+    # Return the encoding
+    return exists $self->{"ENCODING"}? $self->{"ENCODING"}: undef;
 }
 
 # key_encoding: Specify the encoding used in the keys
@@ -71,8 +70,7 @@ sub key_encoding : method {
     }
     
     # Return the encoding
-    return $self->{"KEY_ENCODING"} if exists $self->{"KEY_ENCODING"};
-    return undef;
+    return exists $self->{"KEY_ENCODING"}? $self->{"KEY_ENCODING"}: undef;
 }
 
 # new: Initialize the language handler
@@ -101,7 +99,7 @@ sub subclass_init : method {
     $self->{"REREAD_MO"} = $REREAD_MO;
     # Initialize the DIE_FOR_LOOKUP_FAILURES setting
     $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
-    $self->fail_with("_lmg_failure_handler_auto");
+    $self->SUPER::fail_with($self->can("failure_handler_auto"));
     # Initialize the ENCODE_FAILURE setting
     $self->{"ENCODE_FAILURE"} = FB_DEFAULT;
     # Initialize the MOFILE value of this instance
@@ -224,7 +222,7 @@ sub textdomain : method {
         delete $self->{"MO_ENCODING"};
     }
     # Respect the MO file encoding unless there is a user preferrence
-    if (!exists $self->{"ENCODING_SET"}) {
+    if (!exists $self->{"USERSET_ENCODING"}) {
         if (exists $self->{"MO_ENCODING"}) {
             $self->{"ENCODING"} = $self->{"MO_ENCODING"};
         } else {
@@ -241,7 +239,7 @@ sub textdomain : method {
 # maketext: Encode after maketext
 sub maketext : method {
     local ($_, %_);
-    my ($self, $key, @param, $class);
+    my ($self, $key, @param, $class, $keyd);
     ($self, $key, @param) = @_;
     
     # This is not a static method -- NOW
@@ -268,15 +266,18 @@ sub maketext : method {
     }
     
     # Decode the source text
-    $key = decode($self->{"KEY_ENCODING"}, $key, $self->{"ENCODE_FAILURE"})
-        if exists $self->{"KEY_ENCODING"};
+    $keyd = $key;
+    $keyd = decode($self->{"KEY_ENCODING"}, $keyd, $self->{"ENCODE_FAILURE"})
+        if exists $self->{"KEY_ENCODING"} && !Encode::is_utf8($key);
     # Maketext
-    $_ = $self->SUPER::maketext($key, @param);
+    $_ = $self->SUPER::maketext($keyd, @param);
     # Output to the requested encoding
     if (exists $self->{"ENCODING"}) {
         $_ = encode($self->{"ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
     # Pass through the empty/invalid lexicon
-    } elsif (scalar(keys %{$self->{"Lexicon"}}) == 0 && exists $self->{"KEY_ENCODING"}) {
+    } elsif (   scalar(keys %{$self->{"Lexicon"}}) == 0
+                && exists $self->{"KEY_ENCODING"}
+                && !Encode::is_utf8($key)) {
         $_ = encode($self->{"KEY_ENCODING"}, $_, $self->{"ENCODE_FAILURE"});
     }
     
@@ -361,6 +362,32 @@ sub reload_text : method {
     return;
 }
 
+# fail_with: Wrapper to Locale::Maketext's fail_with(), in order
+#   to record the preferred failure handler of the user, so that
+#   die_for_lookup_failures() knows where to return to.
+sub fail_with : method {
+    local ($_, %_);
+    my $self;
+    ($self, $_) = @_;
+    
+    # This is not a static method
+    return if ref($self) eq "";
+    
+    # Set the current setting
+    if (@_ > 1) {
+        if (defined $_) {
+            $self->{"USERSET_FAIL"} = $_;
+            $self->SUPER::fail_with($_) if $self->{"DIE_FOR_LOOKUP_FAILURES"};
+        } else {
+            delete $self->{"USERSET_FAIL"};
+            delete $self->{"fail"} if $self->{"DIE_FOR_LOOKUP_FAILURES"};
+        }
+    }
+    
+    # Return the current setting
+    return exists $self->{"USERSET_FAIL"}? $self->{"USERSET_FAIL"}: undef;
+}
+
 # die_for_lookup_failures: Whether we should die for lookup failure
 #   The default is no.  GNU gettext never fails.
 sub die_for_lookup_failures : method {
@@ -374,18 +401,21 @@ sub die_for_lookup_failures : method {
     # Set the current setting
     if (@_ > 1) {
         if ($_) {
-            delete $self->{"fail"};
             $self->{"DIE_FOR_LOOKUP_FAILURES"} = 1;
+            if (exists $self->{"USERSET_FAIL"}) {
+                $self->{"fail"} = $self->{"USERSET_FAIL"};
+            } else {
+                delete $self->{"fail"};
+            }
         } else {
-            $self->fail_with("_lmg_failure_handler_auto");
+            $self->SUPER::fail_with($self->can("failure_handler_auto"));
             $self->{"DIE_FOR_LOOKUP_FAILURES"} = 0;
         }
     }
     
     # Return the current setting
-    return $self->{"DIE_FOR_LOOKUP_FAILURES"}
-        if exists $self->{"DIE_FOR_LOOKUP_FAILURES"};
-    return undef;
+    return exists $self->{"DIE_FOR_LOOKUP_FAILURES"}?
+        $self->{"DIE_FOR_LOOKUP_FAILURES"}: undef;
 }
 
 # encode_failure: What to do if the text is out of your output encoding
@@ -406,13 +436,16 @@ sub encode_failure : method {
     return undef;
 }
 
-# _lmg_failure_handler_auto: Our local version of failure_handler_auto(),
+# failure_handler_auto: Our local version of failure_handler_auto(),
 #   Copied and rewritten from Locale::Maketext, with bug#33938 patch applied.
 #   See http://rt.perl.org/rt3//Public/Bug/Display.html?id=33938
-sub _lmg_failure_handler_auto : method {
+sub failure_handler_auto : method {
     local ($_, %_);
     my ($self, $key, @param, $r);
     ($self, $key, @param) = @_;
+    
+    # This is not a static method
+    return if ref($self) eq "";
     
     $self->{"failure_lex"} = {} if !exists $self->{"failure_lex"};
     ${$self->{"failure_lex"}}{$key} = $self->_compile($key)
@@ -575,6 +608,11 @@ By default Lexicon::Maketext::Gettext follows the GNU gettext
 behavior.  But if you are Maketext-styled, or if you need a better
 control over the failures (like me :p), set this to 1.  Returns the
 current setting.
+
+Note that lookup failure handler you registered with fail_with() only
+work when die_for_lookup_failures() is enabled.  if you disable
+die_for_lookup_failures(), maketext() never fails and lookup failure
+handler will be ignored.
 
 =item $LH->reload_text
 
