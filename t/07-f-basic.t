@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Basic test suite for the functional interface
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 29 }
+BEGIN { plan tests => 41 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir catfile);
@@ -142,92 +142,134 @@ ok($_, "Hello, world!");
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
-    $_ = __("Hello, world!");
+    $_[0] = __("Hello, world!");
+    $_[1] = pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = pmaketext("Menu|View|", "Hello, world!");
     return 1;
 };
 # 18
 ok($r, 1);
 # 19
-ok($_, "Hiya :)");
+ok($_[0], "Hiya :)");
+# 20
+ok($_[1], "Hiya :) under the File menu");
+# 21
+ok($_[2], "Hiya :) under the View menu");
 
 # Traditional Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("zh-tw");
-    $_ = __("Hello, world!");
-    return 1;
-};
-# 20
-ok($r, 1);
-# 21
-ok($_, "產");
-
-# Simplified Chinese
-$r = eval {
-    use Locale::Maketext::Gettext::Functions;
-    Locale::Maketext::Gettext::Functions::_reset();
-    bindtextdomain("test", $LOCALEDIR);
-    textdomain("test");
-    get_handle("zh-cn");
-    $_ = __("Hello, world!");
+    $_[0] = __("Hello, world!");
+    $_[1] = pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = pmaketext("Menu|View|", "Hello, world!");
     return 1;
 };
 # 22
 ok($r, 1);
 # 23
-ok($_, "大家好。");
+ok($_[0], "產");
+# 24
+ok($_[1], "郎匡虫產");
+# 25
+ok($_[2], "聅凝匡虫產");
+
+# Simplified Chinese
+$r = eval {
+    use Locale::Maketext::Gettext::Functions;
+    Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
+    bindtextdomain("test", $LOCALEDIR);
+    textdomain("test");
+    get_handle("zh-cn");
+    $_[0] = __("Hello, world!");
+    $_[1] = pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = pmaketext("Menu|View|", "Hello, world!");
+    return 1;
+};
+# 26
+ok($r, 1);
+# 27
+ok($_[0], "大家好。");
+# 28
+ok($_[1], "档案菜单下的大家好。");
+# 29
+ok($_[2], "浏览菜单下的大家好。");
 
 # maketext - by environment
 # English
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "en";
     get_handle();
-    $_ = __("Hello, world!");
+    $_[0] = __("Hello, world!");
+    $_[1] = pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = pmaketext("Menu|View|", "Hello, world!");
     return 1;
 };
-# 24
+# 30
 ok($r, 1);
-# 25
-ok($_, "Hiya :)");
+# 31
+ok($_[0], "Hiya :)");
+# 32
+ok($_[1], "Hiya :) under the File menu");
+# 33
+ok($_[2], "Hiya :) under the View menu");
 
 # Traditional Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "zh-tw";
     get_handle();
-    $_ = __("Hello, world!");
+    $_[0] = __("Hello, world!");
+    $_[1] = pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = pmaketext("Menu|View|", "Hello, world!");
     return 1;
 };
-# 26
+# 34
 ok($r, 1);
-# 27
-ok($_, "產");
+# 35
+ok($_[0], "產");
+# 36
+ok($_[1], "郎匡虫產");
+# 37
+ok($_[2], "聅凝匡虫產");
 
 # Simplified Chinese
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "zh-cn";
     get_handle();
-    $_ = __("Hello, world!");
+    $_[0] = __("Hello, world!");
+    $_[1] = pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = pmaketext("Menu|View|", "Hello, world!");
     return 1;
 };
-# 28
+# 38
 ok($r, 1);
-# 29
-ok($_, "大家好。");
+# 39
+ok($_[0], "大家好。");
+# 40
+ok($_[1], "档案菜单下的大家好。");
+# 41
+ok($_[2], "浏览菜单下的大家好。");

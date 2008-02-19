@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Basic test suite
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 16 }
+BEGIN { plan tests => 22 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir catfile);
@@ -50,9 +50,10 @@ ok($_, "test");
 
 # read_mo
 $META = << "EOT";
-Project-Id-Version: test 1.0
-POT-Creation-Date: 2003-04-24 21:52+0800
-PO-Revision-Date: 2003-04-24 21:52+0800
+Project-Id-Version: test 1.1
+Report-Msgid-Bugs-To: 
+POT-Creation-Date: 2008-02-19 12:31+0800
+PO-Revision-Date: 2008-02-19 12:31+0800
 Last-Translator: imacat <imacat\@mail.imacat.idv.tw>
 Language-Team: English <imacat\@mail.imacat.idv.tw>
 MIME-Version: 1.0
@@ -75,7 +76,7 @@ $r = eval {
 # 5
 ok($r, 1);
 # 6
-ok($n, 2);
+ok($n, 4);
 # 7
 ok($k1, "");
 # 8
@@ -88,41 +89,62 @@ ok($s2, "Hiya :)");
 # English
 $r = eval {
     require T_L10N;
+    @_ = qw();
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
-    $_ = $_->maketext("Hello, world!");
+    $_[0] = $_->maketext("Hello, world!");
+    $_[1] = $_->pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = $_->pmaketext("Menu|View|", "Hello, world!");
     return 1;
 };
 # 11
 ok($r, 1);
 # 12
-ok($_, "Hiya :)");
+ok($_[0], "Hiya :)");
+# 13
+ok($_[1], "Hiya :) under the File menu");
+# 14
+ok($_[2], "Hiya :) under the View menu");
 
 # Traditional Chinese
 $r = eval {
     require T_L10N;
+    @_ = qw();
     $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
-    $_ = $_->maketext("Hello, world!");
-    return 1;
-};
-# 13
-ok($r, 1);
-# 14
-ok($_, "產");
-
-# Simplified Chinese
-$r = eval {
-    require T_L10N;
-    $_ = T_L10N->get_handle("zh-cn");
-    $_->bindtextdomain("test", $LOCALEDIR);
-    $_->textdomain("test");
-    $_ = $_->maketext("Hello, world!");
+    $_[0] = $_->maketext("Hello, world!");
+    $_[1] = $_->pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = $_->pmaketext("Menu|View|", "Hello, world!");
     return 1;
 };
 # 15
 ok($r, 1);
 # 16
-ok($_, "大家好。");
+ok($_[0], "產");
+# 17
+ok($_[1], "郎匡虫產");
+# 18
+ok($_[2], "聅凝匡虫產");
+
+# Simplified Chinese
+$r = eval {
+    require T_L10N;
+    @_ = qw();
+    $_ = T_L10N->get_handle("zh-cn");
+    $_->bindtextdomain("test", $LOCALEDIR);
+    $_->textdomain("test");
+    $_[0] = $_->maketext("Hello, world!");
+    $_[1] = $_->pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = $_->pmaketext("Menu|View|", "Hello, world!");
+    return 1;
+};
+# 19
+ok($r, 1);
+# 20
+ok($_[0], "大家好。");
+# 21
+ok($_[1], "档案菜单下的大家好。");
+# 22
+ok($_[2], "浏览菜单下的大家好。");

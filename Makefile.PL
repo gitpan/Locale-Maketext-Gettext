@@ -3,12 +3,19 @@ require 5.008;
 use strict;
 use ExtUtils::MakeMaker;
 
+# LICENSE is only availabe since ExtUtils::MakeMaker 6.30_01
+use vars qw(%license $eummver);
+%license = qw();
+$eummver = $ExtUtils::MakeMaker::VERSION;
+$eummver =~ s/_//;
+%license = (LICENSE => "perl") if $eummver > 6.30;
+
 WriteMakefile(
     NAME        => "Locale-Maketext-Gettext",
-    VERSION     => "1.22",
+    VERSION     => "1.23",
     ABSTRACT    => "Joins gettext and Maketext frameworks",
     AUTHOR      => "imacat <imacat\@mail.imacat.idv.tw>",
-    LICENSE     => "perl",
+    %license,
     PREREQ_PM   => { },
     SIGN        => 1,
     

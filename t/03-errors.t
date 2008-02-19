@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite for the behavior when something goes wrong
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 25 }
+BEGIN { plan tests => 29 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir);
@@ -115,16 +115,29 @@ ok($_, "Hello, world!");
 # No such message
 $r = eval {
     require T_L10N;
+    @_ = qw();
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
-    $_ = $_->maketext("non-existing message");
+    $_[0] = $_->maketext("[*,_1,non-existing message,non-existing messages]", 1);
+    $_[1] = $_->maketext("[*,_1,non-existing message,non-existing messages]", 3);
+    $_[2] = $_->pmaketext("Menu|View|", "[*,_1,non-existing message,non-existing messages]", 1);
+    $_[3] = $_->pmaketext("Menu|View|", "[*,_1,non-existing message,non-existing messages]", 3);
+    $_[4] = $_->pmaketext("Menu|None|", "Hello, world!");
     return 1;
 };
 # 15
 ok($r, 1);
 # 16
-ok($_, "non-existing message");
+ok($_[0], "1 non-existing message");
+# 17
+ok($_[1], "3 non-existing messages");
+# 18
+ok($_[2], "1 non-existing message");
+# 19
+ok($_[3], "3 non-existing messages");
+# 20
+ok($_[4], "Hello, world!");
 
 # die_for_lookup_failures
 $r = eval {
@@ -138,7 +151,7 @@ $r = eval {
 };
 # To be refined - to know that we failed at maketext()
 # was ok($@, qr/maketext doesn't know how to say/);
-# 17
+# 21
 ok($r, undef);
 
 # multibyte keys
@@ -151,9 +164,9 @@ $r = eval {
     $_ = $_->maketext("（未設定）");
     return 1;
 };
-# 18
+# 22
 ok($r, 1);
-# 19
+# 23
 ok($_, "（未設定）");
 
 $r = eval {
@@ -165,9 +178,9 @@ $r = eval {
     $_ = $_->maketext("（未設定）");
     return 1;
 };
-# 20
+# 24
 ok($r, 1);
-# 21
+# 25
 ok($_, "（未設定）");
 
 # Call maketext before and after binding text domain
@@ -180,9 +193,9 @@ $r = eval {
     $_ = $_->maketext("Hello, world!");
     return 1;
 };
-# 22
+# 26
 ok($r, 1);
-# 23
+# 27
 ok($_, "Hiya :)");
 
 # Search system locale directories
@@ -220,7 +233,7 @@ if (!$skip) {
         return 1;
     };
 }
-# 24
+# 28
 skip($skip, $r, 1);
-# 25
+# 29
 skip($skip, $_, qr/Project-Id-Version:/);

@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite for switching between different settings
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -24,6 +24,7 @@ use vars qw($lh1 $lh2 $dir $f $f1 $f2);
 # 2 language handles of the same localization subclass
 $r = eval {
     require T_L10N;
+    @_ = qw();
     $lh1 = T_L10N->get_handle("en");
     $lh1->bindtextdomain("test", $LOCALEDIR);
     $lh1->textdomain("test");
@@ -56,6 +57,7 @@ ok($_[5], "Every story has a happy ending.");
 # Switch between domains
 $r = eval {
     require T_L10N;
+    @_ = qw();
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->bindtextdomain("test2", $LOCALEDIR);
@@ -88,6 +90,7 @@ ok($_[5], "Every story has a happy ending.");
 # Switch between encodings
 $r = eval {
     require T_L10N;
+    @_ = qw();
     $_ = T_L10N->get_handle("zh-tw");
     $_->bindtextdomain("test", $LOCALEDIR);
     $_->textdomain("test");
@@ -118,6 +121,7 @@ $r = eval {
     copy $f1, $f    or die "ERROR: $f1 $f: $!";
     
     require T_L10N;
+    @_ = qw();
     $_ = T_L10N->get_handle("en");
     $_->bindtextdomain("test_reload", $LOCALEDIR);
     $_->textdomain("test_reload");

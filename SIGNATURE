@@ -15,48 +15,48 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 f044bfe71c57b6f25c659bc0a6067aa854bc8343 BUGS
-SHA1 e8fc1155f2467c5e71ac41d51a97064360de4ce4 Build.PL
-SHA1 edbf198166e6657ea7aa95ba8197caf3f290db4e Changes
+SHA1 f6bcf1bae3fc49661675eb16bbe5985a41da21ef Build.PL
+SHA1 3faac8d60443baa6e8362602ecdba20c40191bc1 Changes
 SHA1 a5533dd40fc91ae942bf08c8cf176ec0477c7344 MANIFEST
-SHA1 147282d890c160681d66072b3721f7c66265330f META.yml
-SHA1 5442f8a94636d951d82174de528ce5a6a2897550 Makefile.PL
+SHA1 14a6f46dfeaddda4fb745c62c847e438b8629ec3 META.yml
+SHA1 32c64deec27191231b547151ed4e94b8e1e29c45 Makefile.PL
 SHA1 3d0d22ad8659da0274e541c760a45ac6e50aa99d README
-SHA1 e7a66e4a765a1ca43576557ababd20d66bc8f1f7 THANKS
+SHA1 3db402b52e04cf5a6e60291c23aac8c16f2db810 THANKS
 SHA1 f89afd70fdcbaeeab44fada7ed3087d5c7f6f018 bin/maketext
-SHA1 77d53c73446b7f317f6dae6b6017bf014282830e lib/Locale/Maketext/Gettext.pm
-SHA1 9767dad70509b74cc5ef2892bbe9111e1bea05d1 lib/Locale/Maketext/Gettext/Functions.pm
+SHA1 6166fc51a8180be6b5781dfffaedb4bd6bba82c8 lib/Locale/Maketext/Gettext.pm
+SHA1 b88b6bad1e8cb0ba825594c233c006c1b297646f lib/Locale/Maketext/Gettext/Functions.pm
 SHA1 525f414c7a0aadc61240a4b0959ca2cda7514c75 t/00-signature.t
-SHA1 9d330872d9e42f3880fef48a363876671dce3412 t/01-basic.t
+SHA1 7bc2bf2d3ef2befd48a457fb3d90c7c7bdcc4854 t/01-basic.t
 SHA1 50bfbbac6a6abdc8439cc0da6d43fa00a01358f5 t/02-big-endian.t
-SHA1 f95e9d264808cae5c6a435dffdd888ad6b3b2c1f t/03-errors.t
+SHA1 50ccae38bb7e6c11bea66263b51f2eba6584c792 t/03-errors.t
 SHA1 8a28c721b5eefe607c300192c8cb8e8107f419be t/04-encodings.t
-SHA1 e95e54abf1ba5c6ebf5e1ff0907bb250c94fb364 t/05-switching.t
+SHA1 c16af7bbe1d9bd7ce8644c19f968231b94156c12 t/05-switching.t
 SHA1 0212e5b50d6886601b0a4ad82d3c656975009a73 t/06-racing.t
-SHA1 4d87c96588f9efd8ea303d81c22eeb1715621034 t/07-f-basic.t
-SHA1 9daa4f962060376c8ae213c8cf1e8f581539fc50 t/08-f-errors.t
+SHA1 2ddb628b67ae35033fad4331c5323928d7dd7395 t/07-f-basic.t
+SHA1 d8e28881aa1961d74f4fda410d13713fab756ff0 t/08-f-errors.t
 SHA1 8fb7ecbce36daaf81ac9c197dab6834b25233cc5 t/09-f-encodings.t
-SHA1 05e70ae313014f6e94550d44f03987e8a2fed07a t/10-f-switching.t
+SHA1 2c1641cc6fff792fb83826486050acab23a1db51 t/10-f-switching.t
 SHA1 4afe4980e7ed4d326009b8257e01320abfb33d14 t/11-command-line.t
 SHA1 b85626024d610808bd0909989dcfb9fb20a40485 t/99-pod.t
 SHA1 97dad77dee7f751d09efdb6900b077d68c853d46 t/T_L10N.pm
-SHA1 38f0aa7d0d102bef6f84676c089f8ce2035b1ca3 t/locale/C/LC_MESSAGES/test.mo
+SHA1 676b87d7a8edc735ba676d2901827eb52532b418 t/locale/C/LC_MESSAGES/test.mo
 SHA1 80ca74a96bd6f83bd903ebfd021b87c9184582eb t/locale/en/LC_MESSAGES/bad.mo
-SHA1 bd24b8b7203b0d30d1e0ef3c9af33436774e49a6 t/locale/en/LC_MESSAGES/test.mo
-SHA1 059e1b64bf822ce1df280faa1f00120ab83dbb58 t/locale/en/LC_MESSAGES/test2.mo
+SHA1 676b87d7a8edc735ba676d2901827eb52532b418 t/locale/en/LC_MESSAGES/test.mo
+SHA1 fbd67646ebb39a99c1ab5aa985addd7f7ab27561 t/locale/en/LC_MESSAGES/test2.mo
 SHA1 99b05048a1243bb75622a3c6e8a7c8e9f59a9151 t/locale/en/LC_MESSAGES/test_be.mo
-SHA1 1bad173d46e3ef3941f99d9736ee3ad2ec5b2abe t/locale/en/LC_MESSAGES/test_utf8.mo
-SHA1 2db253aaa34d92285adf8a72c4ba518c8eb8b095 t/locale/zh_CN/LC_MESSAGES/test.mo
+SHA1 5d3e312b86526ebe164589b1f7fbf96f01823b0c t/locale/en/LC_MESSAGES/test_utf8.mo
+SHA1 42eece65e0ceae8267000b42692212c260a49b36 t/locale/zh_CN/LC_MESSAGES/test.mo
 SHA1 746c06a73e4eb641eb006c90ed938c4b98cfc2ec t/locale/zh_CN/LC_MESSAGES/test_be.mo
-SHA1 ce40b0a4b57820b7104df00049d69b6653a55c64 t/locale/zh_CN/LC_MESSAGES/test_utf8.mo
-SHA1 b41e19e552384b3d3239bb5e0349ded1477b52eb t/locale/zh_TW/LC_MESSAGES/test.mo
-SHA1 f94985a1de56c8210430d310db9d9264f12c1960 t/locale/zh_TW/LC_MESSAGES/test2.mo
+SHA1 8db66e4035d1f55cd27186e02c0386709c2fc3d0 t/locale/zh_CN/LC_MESSAGES/test_utf8.mo
+SHA1 6aa98d6675c91555309d58a93ff59cb205cbdd7b t/locale/zh_TW/LC_MESSAGES/test.mo
+SHA1 bcc89cdc393507d51b5a76e40954db72914b60d8 t/locale/zh_TW/LC_MESSAGES/test2.mo
 SHA1 20f810c6229d0bd4064b27f9b3d86b61a20f0821 t/locale/zh_TW/LC_MESSAGES/test_be.mo
-SHA1 ce40b0a4b57820b7104df00049d69b6653a55c64 t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
-SHA1 2c5d420b6687bbf21e6c42058c6e1476e38501bd t/test_native.po
+SHA1 eb13887b005e3c3e9fab774dfea22de5c01ad1ef t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
+SHA1 3715ad3ae34a565d39211ef7b3fddc0933b0d8d0 t/test_native.po
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Version: GnuPG v1.4.8 (GNU/Linux)
 
-iD8DBQFGCm+ii9gubzC5S1wRAsKhAJ9Njb9bck6wlOst/zjoaXk23dD3DACeOo6p
-nhFV91b/ACw0OHAf1DqPzio=
-=oBUg
+iEYEARECAAYFAke6dYEACgkQi9gubzC5S1wQwgCfaTYgcxz1h/lps1wVPLnmP2jc
+NxAAn2ATWrVKG4AWEgdb/Ti0S6sphDfL
+=/LLl
 -----END PGP SIGNATURE-----

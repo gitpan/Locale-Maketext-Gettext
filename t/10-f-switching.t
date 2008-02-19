@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite on the functional interface for switching between different settings
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 57 }
+BEGIN { plan tests => 63 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir catfile);
@@ -28,16 +28,23 @@ use vars qw($dir1 $dir2 $dir3 $f1 $f11 $f12 $f2 $f21 $f3 $f31 $class);
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     get_handle("en");
     bindtextdomain("test", $LOCALEDIR);
     bindtextdomain("test2", $LOCALEDIR);
     textdomain("test");
     $_[0] = __("Hello, world!");
-    $_[1] = __("Every story has a happy ending.");
-    $_[2] = dmaketext("test2", "Hello, world!");
-    $_[3] = dmaketext("test2", "Every story has a happy ending.");
-    $_[4] = __("Hello, world!");
-    $_[5] = __("Every story has a happy ending.");
+    $_[1] = pmaketext("Menu|File|", "Hello, world!");
+    $_[2] = __("Every story has a happy ending.");
+    $_[3] = pmaketext("Menu|File|", "Every story has a happy ending.");
+    $_[4] = dmaketext("test2", "Hello, world!");
+    $_[5] = dpmaketext("test2", "Menu|File|", "Hello, world!");
+    $_[6] = dmaketext("test2", "Every story has a happy ending.");
+    $_[7] = dpmaketext("test2", "Menu|File|", "Every story has a happy ending.");
+    $_[8] = __("Hello, world!");
+    $_[9] = pmaketext("Menu|File|", "Hello, world!");
+    $_[10] = __("Every story has a happy ending.");
+    $_[11] = pmaketext("Menu|File|", "Every story has a happy ending.");
     return 1;
 };
 # 1
@@ -45,20 +52,33 @@ ok($r, 1);
 # 2
 ok($_[0], "Hiya :)");
 # 3
-ok($_[1], "Every story has a happy ending.");
+ok($_[1], "Hiya :) under the File menu");
 # 4
-ok($_[2], "Hello, world!");
+ok($_[2], "Every story has a happy ending.");
 # 5
-ok($_[3], "Pray it.");
+ok($_[3], "Every story has a happy ending.");
 # 6
-ok($_[4], "Hiya :)");
-# 7
-ok($_[5], "Every story has a happy ending.");
+ok($_[4], "Hello, world!");
+# 6
+ok($_[5], "Hello, world!");
+# 8
+ok($_[6], "Pray it.");
+# 9
+ok($_[7], "Pray it under the File menu");
+# 10
+ok($_[8], "Hiya :)");
+# 11
+ok($_[9], "Hiya :) under the File menu");
+# 12
+ok($_[10], "Every story has a happy ending.");
+# 13
+ok($_[11], "Every story has a happy ending.");
 
 # Switch between domains
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     bindtextdomain("test2", $LOCALEDIR);
     get_handle("en");
@@ -73,25 +93,26 @@ $r = eval {
     $_[5] = __("Every story has a happy ending.");
     return 1;
 };
-# 8
-ok($r, 1);
-# 9
-ok($_[0], "Hiya :)");
-# 10
-ok($_[1], "Every story has a happy ending.");
-# 11
-ok($_[2], "Hello, world!");
-# 12
-ok($_[3], "Pray it.");
-# 13
-ok($_[4], "Hiya :)");
 # 14
+ok($r, 1);
+# 15
+ok($_[0], "Hiya :)");
+# 16
+ok($_[1], "Every story has a happy ending.");
+# 17
+ok($_[2], "Hello, world!");
+# 18
+ok($_[3], "Pray it.");
+# 19
+ok($_[4], "Hiya :)");
+# 20
 ok($_[5], "Every story has a happy ending.");
 
 # Switch between languages
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -102,19 +123,20 @@ $r = eval {
     $_[2] = __("Hello, world!");
     return 1;
 };
-# 15
+# 21
 ok($r, 1);
-# 16
+# 22
 ok($_[0], "Hiya :)");
-# 17
+# 23
 ok($_[1], "產");
-# 18
+# 24
 ok($_[2], "大家好。");
 
 # Switch between languages - by environment
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     $ENV{"LANG"} = "en";
@@ -128,19 +150,20 @@ $r = eval {
     $_[2] = __("Hello, world!");
     return 1;
 };
-# 19
+# 25
 ok($r, 1);
-# 20
+# 26
 ok($_[0], "Hiya :)");
-# 21
+# 27
 ok($_[1], "產");
-# 22
+# 28
 ok($_[2], "大家好。");
 
 # Switch between different language methods
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
@@ -155,21 +178,22 @@ $r = eval {
     $_[3] = __("Hello, world!");
     return 1;
 };
-# 23
+# 29
 ok($r, 1);
-# 24
+# 30
 ok($_[0], "Hiya :)");
-# 25
+# 31
 ok($_[1], "產");
-# 26
+# 32
 ok($_[2], "大家好。");
-# 27
+# 33
 ok($_[3], "Hiya :)");
 
 # Reuse of a same text domain class
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     $ENV{"LANG"} = "en";
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
@@ -200,31 +224,32 @@ $r = eval {
     $_[9] =~ s/^(.+)::.*?$/$1/;
     return 1;
 };
-# 28
-ok($r, 1);
-# 29
-ok($_[0], "Hiya :)");
-# 30
-ok($_[1], "Every story has a happy ending.");
-# 31
-ok($_[3], "Hello, world!");
-# 32
-ok($_[4], "珿ㄆ常Τ腞挡Ы");
-# 33
-ok($_[5], "Hello, world!");
 # 34
-ok($_[6], "Every story has a happy ending.");
+ok($r, 1);
 # 35
-ok($_[7], "大家好。");
+ok($_[0], "Hiya :)");
 # 36
-ok($_[8], "Every story has a happy ending.");
+ok($_[1], "Every story has a happy ending.");
 # 37
+ok($_[3], "Hello, world!");
+# 38
+ok($_[4], "珿ㄆ常Τ腞挡Ы");
+# 39
+ok($_[5], "Hello, world!");
+# 40
+ok($_[6], "Every story has a happy ending.");
+# 41
+ok($_[7], "大家好。");
+# 42
+ok($_[8], "Every story has a happy ending.");
+# 43
 ok($_[2], $_[9]);
 
 # Language addition/removal
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     $dir1 = catdir($LOCALEDIR, "en", "LC_MESSAGES");
     $dir2 = catdir($LOCALEDIR, "zh_TW", "LC_MESSAGES");
     $dir3 = catdir($LOCALEDIR, "zh_CN", "LC_MESSAGES");
@@ -280,27 +305,27 @@ $r = eval {
     unlink $f3;
     return 1;
 };
-# 38
-ok($r, 1);
-# 39
-ok($_[0], "Hello, world!");
-# 40
-ok($_[1], "Hello, world!");
-# 41
-ok($_[2], "產");
-# 42
-ok($_[3], "Hello, world!");
-# 43
-ok($_[4], "Hello, world!");
 # 44
-ok($_[5], "大家好。");
+ok($r, 1);
 # 45
-ok($_[6], "產");
+ok($_[0], "Hello, world!");
 # 46
-ok($_[7], "大家好。");
+ok($_[1], "Hello, world!");
 # 47
-ok($_[8], "Hello, world!");
+ok($_[2], "產");
 # 48
+ok($_[3], "Hello, world!");
+# 49
+ok($_[4], "Hello, world!");
+# 50
+ok($_[5], "大家好。");
+# 51
+ok($_[6], "產");
+# 52
+ok($_[7], "大家好。");
+# 53
+ok($_[8], "Hello, world!");
+# 54
 ok($_[9], "Hello, world!");
 
 # Garbage collection - drop abandoned language handles
@@ -338,9 +363,9 @@ $r = eval {
     @_ = grep /^$class/, keys %Locale::Maketext::Gettext::Functions::LHS;
     return 1;
 };
-# 49
+# 55
 ok($r, 1);
-# 50
+# 56
 ok(scalar(@_), 0);
 
 # Reload the text
@@ -353,6 +378,7 @@ $r = eval {
     copy $f11, $f1  or die "ERROR: $f11 $f1: $!";
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test_reload", $LOCALEDIR);
     textdomain("test_reload");
     get_handle("en");
@@ -368,19 +394,19 @@ $r = eval {
     unlink $f1;
     return 1;
 };
-# 51
-ok($r, 1);
-# 52
-ok($_[0], "Hiya :)");
-# 53
-ok($_[1], "Every story has a happy ending.");
-# 54
-ok($_[2], "Hiya :)");
-# 55
-ok($_[3], "Every story has a happy ending.");
-# 56
-ok($_[4], "Hello, world!");
 # 57
+ok($r, 1);
+# 58
+ok($_[0], "Hiya :)");
+# 59
+ok($_[1], "Every story has a happy ending.");
+# 60
+ok($_[2], "Hiya :)");
+# 61
+ok($_[3], "Every story has a happy ending.");
+# 62
+ok($_[4], "Hello, world!");
+# 63
 ok($_[5], "Pray it.");
 
 # Garbage collection

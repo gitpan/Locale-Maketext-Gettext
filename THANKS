@@ -6,8 +6,8 @@ GNU gettext, especially for the completeness and simplicity of its design.
 
 Thanks for Autrijus Tang <autrijus@autrijus.org> for writing
 Locale::Maketext::Lexicon.  It inspires me to import %Lexicon from other
-sources.  Also thanks for approving such a project that is a competition to his
-own Locale::Maketext::Lexicon. :p
+sources.  Also thanks for approving such a project that is a competition to
+his own Locale::Maketext::Lexicon. :p
 
 Thanks to Max Maischein <corion@corion.net> for reporting CPAN tester failures
 200029, 200332 and 200331, that helps me finding the shell character escaping
@@ -17,5 +17,8 @@ Thanks to Andreas Koenig <andk@cpan.org> for reporting CPAN tester failures
 387357 and submitting rt bug 23956, informing me the base class
 Locale::Maketext has updated its error handling behavior in the Perl 5.9.
 
+Thanks to Chris Travers <chris.travers@gmail.com> for suggestion on
+implementing pgettext() in GNU gettext as pmaketext().
+
 Finally, well, :p thanks to Larry Wall, for writing such a
-great programming language, as perl.
+great programming language, as Perl.

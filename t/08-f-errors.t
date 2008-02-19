@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite on the functional interface for the behavior when something goes wrong
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -9,7 +9,7 @@ use strict;
 use warnings;
 use Test;
 
-BEGIN { plan tests => 35 }
+BEGIN { plan tests => 39 }
 
 use FindBin;
 use File::Spec::Functions qw(catdir);
@@ -116,16 +116,29 @@ ok($_, "Hello, world!");
 $r = eval {
     use Locale::Maketext::Gettext::Functions;
     Locale::Maketext::Gettext::Functions::_reset();
+    @_ = qw();
     bindtextdomain("test", $LOCALEDIR);
     textdomain("test");
     get_handle("en");
-    $_ = __("non-existing message");
+    $_[0] = __("[*,_1,non-existing message,non-existing messages]", 1);
+    $_[1] = __("[*,_1,non-existing message,non-existing messages]", 3);
+    $_[2] = pmaketext("Menu|View|", "[*,_1,non-existing message,non-existing messages]", 1);
+    $_[3] = pmaketext("Menu|View|", "[*,_1,non-existing message,non-existing messages]", 3);
+    $_[4] = pmaketext("Menu|None|", "Hello, world!");
     return 1;
 };
 # 15
 ok($r, 1);
 # 16
-ok($_, "non-existing message");
+ok($_[0], "1 non-existing message");
+# 17
+ok($_[1], "3 non-existing messages");
+# 18
+ok($_[2], "1 non-existing message");
+# 19
+ok($_[3], "3 non-existing messages");
+# 20
+ok($_[4], "Hello, world!");
 
 # get_handle before textdomain
 $r = eval {
@@ -137,9 +150,9 @@ $r = eval {
     $_ = __("Hello, world!");
     return 1;
 };
-# 17
+# 21
 ok($r, 1);
-# 18
+# 22
 ok($_, "Hiya :)");
 
 # bindtextdomain after textdomain
@@ -152,9 +165,9 @@ $r = eval {
     $_ = __("Every story has a happy ending.");
     return 1;
 };
-# 19
+# 23
 ok($r, 1);
-# 20
+# 24
 ok($_, "Pray it.");
 
 # multibyte keys
@@ -168,9 +181,9 @@ $r = eval {
     $_ = maketext("（未設定）");
     return 1;
 };
-# 21
+# 25
 ok($r, 1);
-# 22
+# 26
 ok($_, "（未設定）");
 
 $r = eval {
@@ -183,9 +196,9 @@ $r = eval {
     $_ = maketext("（未設定）");
     return 1;
 };
-# 23
+# 27
 ok($r, 1);
-# 24
+# 28
 ok($_, "（未設定）");
 
 # Maketext before and after binding text domain
@@ -199,9 +212,9 @@ $r = eval {
     $_ = __("Hello, world!");
     return 1;
 };
-# 25
+# 29
 ok($r, 1);
-# 26
+# 30
 ok($_, "Hiya :)");
 
 # Switch to a domain that is not binded yet
@@ -215,9 +228,9 @@ $r = eval {
     $_ = __("Hello, world!");
     return 1;
 };
-# 27
+# 31
 ok($r, 1);
-# 28
+# 32
 ok($_, "Hello, world!");
 
 # N_: different context - string to array
@@ -230,11 +243,11 @@ $r = eval {
     @_ = N_("Hello, world!");
     return 1;
 };
-# 29
+# 33
 ok($r, 1);
-# 30
+# 34
 ok($_[0], "Hello, world!");
-# 31
+# 35
 ok($_[1], undef);
 
 # N_: different context - array to string
@@ -247,9 +260,9 @@ $r = eval {
     $_ = N_("Hello, world!", "Cool!", "Big watermelon");
     return 1;
 };
-# 32
+# 36
 ok($r, 1);
-# 33
+# 37
 ok($_, "Hello, world!");
 
 # Search system locale directories
@@ -280,7 +293,7 @@ if (!$skip) {
         return 1;
     };
 }
-# 34
+# 38
 skip($skip, $r, 1);
-# 35
+# 39
 skip($skip, $_, qr/Project-Id-Version:/);

@@ -1,6 +1,6 @@
 # Locale::Maketext::Gettext::Functions - Functional interface to Locale::Maketext::Gettext
 
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 # First written: 2003-04-28
@@ -11,9 +11,10 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use vars qw($VERSION @EXPORT @EXPORT_OK);
-$VERSION = 0.12;
+$VERSION = 0.13;
 @EXPORT = qw();
-push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_ dmaketext);
+push @EXPORT, qw(bindtextdomain textdomain get_handle maketext __ N_);
+push @EXPORT, qw(dmaketext pmaketext dpmaketext);
 push @EXPORT, qw(reload_text read_mo encoding key_encoding encode_failure);
 push @EXPORT, qw(die_for_lookup_failures);
 @EXPORT_OK = @EXPORT;
@@ -25,6 +26,8 @@ sub maketext(@);
 sub __(@);
 sub N_(@);
 sub dmaketext($$@);
+sub pmaketext($$@);
+sub dpmaketext($$$@);
 sub reload_text();
 sub encoding(;$);
 sub key_encoding(;$);
@@ -145,13 +148,13 @@ sub __(@) {
 #     with xgettext
 #   Use @ instead of $@ in prototype, so that we can pass @_ to it.
 sub N_(@) {
-    # Watch out for this perl magic! :p
+    # Watch out for this Perl magic! :p
     return $_[0] unless wantarray;
     return @_;
 }
 
 # dmaketext: Maketext in another text domain temporarily,
-#            an equivalent to dgettext.
+#            an equivalent to dgettext().
 sub dmaketext($$@) {
     local ($_, %_);
     my ($domain, $key, @param, $lh0, $domain0, $text);
@@ -166,6 +169,26 @@ sub dmaketext($$@) {
     ($LH, $DOMAIN) = ($lh0, $domain0);
     # Return the "made text"
     return $text;
+}
+
+# pmaketext: Maketext with context,
+#            an equivalent to pgettext().
+sub pmaketext($$@) {
+    local ($_, %_);
+    my ($ctxt, $key, @param);
+    ($ctxt, $key, @param) = @_;
+    # This is actually a wrapper to the maketext() function
+    return maketext("$ctxt\x04$key", @param);
+}
+
+# dpmaketext: Maketext with context in another text domain temporarily,
+#             an equivalent to dpgettext().
+sub dpmaketext($$$@) {
+    local ($_, %_);
+    my ($domain, $ctxt, $key, @param);
+    ($domain, $ctxt, $key, @param) = @_;
+    # This is actually a wrapper to the dmaketext() function
+    return dmaketext($domain, "$ctxt\x04$key", @param);
 }
 
 # reload_text: Purge the lexicon cache
@@ -445,7 +468,7 @@ sub _k($) {
     return join "\n", $LOCALEDIRS{$_[0]}, $CATEGORY, $_[0];
 }
 
-# _lang: The langage from a language handle.  language_tag isn't quite sane.
+# _lang: The langage from a language handle.  language_tag is not quite sane.
 sub _lang($) {
     local ($_, %_);
     $_ = $_[0];
@@ -499,9 +522,10 @@ L<Locale::Maketext(3)|Locale::Maketext/3> for you.  No more
 localization class/subclasses and language handles are required at
 all.
 
-The C<maketext> and C<dmaketext> functions attempt to translate a
-text string into the user's native language, by looking up the
-translation in an MO lexicon file.
+The C<maketext>, C<dmaketext>, C<pmaketext> and C<dpmaketext>
+functions attempt to translate a text message into the native
+language of the user, by looking up the translation in an MO lexicon
+file.
 
 =head1 FUNCTIONS
 
@@ -521,8 +545,8 @@ method always success.
 
 =item get_handle(@languages)
 
-Set the user's language.  It searches for an available language in
-the provided @languages list.  If @languages was not provided, it
+Set the language of the user.  It searches for an available language
+in the provided @languages list.  If @languages was not provided, it
 looks checks environment variable LANG, and HTTP_ACCEPT_LANGUAGE
 when running as CGI.  Refer to
 L<Locale::Maketext(3)|Locale::Maketext/3> for the magic of the
@@ -530,8 +554,8 @@ C<get_handle>.
 
 =item $message = maketext($key, @param...)
 
-Attempts to translate a text string into the user's native language,
-by looking up the translation in an MO lexicon file.  Refer to
+Attempts to translate a text message into the native language of the
+user, by looking up the translation in an MO lexicon file.  Refer to
 L<Locale::Maketext(3)|Locale::Maketext/3> for the C<maketext> plural
 grammer.
 
@@ -548,7 +572,21 @@ catched with xgettext.
 =item $message = dmaketext($domain, $key, @param...)
 
 Temporarily switch to another text domain and attempts to translate
-a text string into the user's native language in that text domain.
+a text message into the native language of the user in that text
+domain.  Use "--keyword=dmaketext:2" for the xgettext utility.
+
+=item $message = pmaketext($ctxt, $key, @param...)
+
+Attempts to translate a text message in a particular context into the
+native language of the user.  Use "--keyword=pmaketext:1c,2" for
+the xgettext utility.
+
+=item $message = dpmaketext($domain, $ctxt, $key, @param...)
+
+Temporarily switch to another text domain and attempts to translate
+a text message in a particular context into the native language of
+the user in that text domain.  Use "--keyword=dpmaketext:2c,3" for
+the xgettext utility.
 
 =item encoding(ENCODING)
 
@@ -559,7 +597,7 @@ the result in unencoded UTF-8.
 =item key_encoding(ENCODING)
 
 Specify the encoding used in your original text.  The C<maketext>
-method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
+method itself is not multibyte-safe to the _AUTO lexicon.  If you are
 using your native non-English language as your original text and you
 are having troubles like:
 
@@ -626,7 +664,7 @@ Suggestions are welcome.
 You can now add/remove languages/MO files at run-time.  This is a
 major improvement over the original
 L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> (and
-L<Locale::Maketext(3)|Locale::Maketext/3>). ^_*'  This is done by
+L<Locale::Maketext(3)|Locale::Maketext/3>).  This is done by
 registering localization classes with random IDs, so that the same
 text domain can be re-declared infinitely, whenever needed (language
 list changes, LOCALEDIR changes, etc.)  This is not possible to the
@@ -676,7 +714,7 @@ But what if C<get_handle> itself fails?  So, this becomes:
   %Lexicon = ( "_AUTO" => 1 );
 
 Ya, this works.  But, if I always have to do this in my every
-application, why shouldn't I make a solution to the localization
+application, why should I not make a solution to the localization
 framework itself?  This is a common problem to every localization
 projects.  It should be solved at the localization framework level,
 but not at the application level.
@@ -687,7 +725,7 @@ A localization framework should be neat and simple.  It should lower
 down its barrier, be friendly to the beginners, in order to
 encourage the use of localization and globalization.  Apparently
 the current practice of L<Locale::Maketext(3)|Locale::Maketext/3>
-doesn't satisfy this request.
+does not satisfy this request.
 
 The third reason is:  Since 
 L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> imports
@@ -712,7 +750,7 @@ C<die_for_lookup_failures> are not mod_perl-safe.  These settings
 affect the whole process, including the following scripts it is
 going to run.  This is the same as C<setlocale> in
 L<POSIX(3)|POSIX/3>.  Always set them at the very beginning of your
-script if you are running under mod_perl.  If you don't like it,
+script if you are running under mod_perl.  If you do not like it,
 use the object-oriented
 L<Locale::Maketext::Gettext(3)|Locale::Maketext::Gettext/3> instead.
 Suggestions are welcome.
@@ -736,7 +774,7 @@ imacat <imacat@mail.imacat.idv.tw>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 

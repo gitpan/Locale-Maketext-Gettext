@@ -1,6 +1,6 @@
 # Locale::Maketext::Gettext - Joins the gettext and Maketext frameworks
 
-# Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 # First written: 2003-04-23
@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 1.22;
+$VERSION = 1.23;
 @EXPORT = qw(read_mo);
 @EXPORT_OK = @EXPORT;
 # Prototype declaration
@@ -242,7 +242,7 @@ sub maketext : method {
     my ($self, $key, @param, $class, $keyd);
     ($self, $key, @param) = @_;
     
-    # This is not a static method -- NOW
+    # This is not a static method - NOW
     return if ref($self) eq "";
     # Find the class name
     $class = ref($self);
@@ -284,6 +284,17 @@ sub maketext : method {
     return $_;
 }
 
+# pmaketext: Maketext with context
+sub pmaketext : method {
+    local ($_, %_);
+    my ($self, $ctxt, $key, @param);
+    ($self, $ctxt, $key, @param) = @_;
+    # This is not a static method - NOW
+    return if ref($self) eq "";
+    # This is actually a wrapper to the maketext() method
+    return $self->maketext("$ctxt\x04$key", @param);
+}
+
 # read_mo: Subroutine to read and parse the MO file
 #          Refer to gettext documentation section 8.3
 sub read_mo($) {
@@ -295,7 +306,7 @@ sub read_mo($) {
     return unless -f $MOfile && -r $MOfile;
     # Read the MO file
     $len = (stat $MOfile)[7];
-    open $FH, $MOfile   or return;  # GNU gettext never fails! ^_*'
+    open $FH, $MOfile   or return;  # GNU gettext never fails!
     binmode $FH;
     defined($_ = read $FH, $content, $len)
                         or return;
@@ -320,27 +331,27 @@ sub read_mo($) {
     return if $_ > 0;
     
     my ($num, $offo, $offt);
-    # Number of strings
+    # Number of messages
     $num = unpack $tmpl, substr($content, 8, 4);
-    # Offset to the beginning of the original strings
+    # Offset to the beginning of the original messages
     $offo = unpack $tmpl, substr($content, 12, 4);
-    # Offset to the beginning of the translated strings
+    # Offset to the beginning of the translated messages
     $offt = unpack $tmpl, substr($content, 16, 4);
     %_ = qw();
     for ($_ = 0; $_ < $num; $_++) {
         my ($len, $off, $stro, $strt);
-        # The first word is the length of the string
+        # The first word is the length of the message
         $len = unpack $tmpl, substr($content, $offo+$_*8, 4);
-        # The second word is the offset of the string
+        # The second word is the offset of the message
         $off = unpack $tmpl, substr($content, $offo+$_*8+4, 4);
-        # Original string
+        # Original message
         $stro = substr($content, $off, $len);
         
-        # The first word is the length of the string
+        # The first word is the length of the message
         $len = unpack $tmpl, substr($content, $offt+$_*8, 4);
-        # The second word is the offset of the string
+        # The second word is the offset of the message
         $off = unpack $tmpl, substr($content, $offt+$_*8+4, 4);
-        # Translated string
+        # Translated message
         $strt = substr($content, $off, $len);
         
         # Hash it
@@ -362,7 +373,7 @@ sub reload_text : method {
     return;
 }
 
-# fail_with: Wrapper to Locale::Maketext's fail_with(), in order
+# fail_with: A wrapper to the fail_with() of Locale::Maketext, in order
 #   to record the preferred failure handler of the user, so that
 #   die_for_lookup_failures() knows where to return to.
 sub fail_with : method {
@@ -446,6 +457,11 @@ sub failure_handler_auto : method {
     
     # This is not a static method
     return if ref($self) eq "";
+    
+    # Remove the context
+    # We assume there is no one using EOF either in the context or message.
+    # That does not work in GNU gettext, anyway.
+    $key =~ s/^[^\x04]*\x04//;
     
     $self->{"failure_lex"} = {} if !exists $self->{"failure_lex"};
     ${$self->{"failure_lex"}}{$key} = $self->_compile($key)
@@ -537,7 +553,7 @@ F</usr/share/locale/de/LC_MESSAGES/myapp.mo>.
 
 Then, build your Maketext localization class, with your base class
 changed from L<Locale::Maketext(3)|Locale::Maketext/3> to
-Locale::Maketext::Gettext.  That's all. ^_*'
+Locale::Maketext::Gettext.  That is all.
 
 =head1 METHODS
 
@@ -557,12 +573,18 @@ method always success.
 
 =item $text = $LH->maketext($key, @param...)
 
-Lookup the $key in current lexicon and return a translated message
-in users language.  This is the same method in
+Lookup the $key in the current lexicon and return a translated
+message in the language of the user.  This is the same method in
 L<Locale::Maketext(3)|Locale::Maketext/3>, with a wrapper that
-returns the text string C<encode>d according to the current
+returns the text message C<encode>d according to the current
 C<encoding>.  Refer to L<Locale::Maketext(3)|Locale::Maketext/3> for
 the maketext plural notation.
+
+=item $text = $LH->pmaketext($ctxt, $key, @param...)
+
+Lookup the $key in a particular context in the current lexicon and
+return a translated message in the language of the user.   Use
+"--keyword=pmaketext:1c,2" for the xgettext utility.
 
 =item $LH->language_tag
 
@@ -578,7 +600,7 @@ the result in unencoded UTF-8.
 =item $LH->key_encoding(ENCODING)
 
 Specify the encoding used in your original text.  The C<maketext>
-method itself isn't multibyte-safe to the _AUTO lexicon.  If you are
+method itself is not multibyte-safe to the _AUTO lexicon.  If you are
 using your native non-English language as your original text and you
 are having troubles like:
 
@@ -651,7 +673,7 @@ package.
 
 =head1 NOTES
 
-B<WARNING:> Don't try to put any lexicon in your language subclass.
+B<WARNING:> do not try to put any lexicon in your language subclass.
 When the C<textdomain> method is called, the current lexicon will be
 B<replaced>, but not appended.  This is to accommodate the way
 C<textdomain> works.  Messages from the previous text domain should
@@ -659,7 +681,7 @@ not stay in the current text domain.
 
 An essential benefit of this Locale::Maketext::Gettext over the
 original L<Locale::Maketext(3)|Locale::Maketext/3> is that: 
-I<GNU gettext is multibyte safe,> but perl source isn't.  GNU gettext
+I<GNU gettext is multibyte safe,> but Perl source is not.  GNU gettext
 is safe to Big5 characters like \xa5\x5c (Gong1).  But if you follow
 the current L<Locale::Maketext(3)|Locale::Maketext/3> document and
 put your lexicon as a hash in the source of a localization subclass,
@@ -670,7 +692,7 @@ presented with unreadable mess, "Luan4Ma3".  Sorry to say this, but
 it is weird for a localization framework to be not multibyte-safe.
 But, well, here comes Locale::Maketext::Gettext to rescue.  With
 Locale::Maketext::Gettext, you can sit back and relax now, leaving
-all this mess to the excellent GNU gettext framework. ^_*'
+all this mess to the excellent GNU gettext framework.
 
 The idea of Locale::Maketext::Getttext came from
 L<Locale::Maketext::Lexicon(3)|Locale::Maketext::Lexicon/3>, a great
@@ -686,7 +708,7 @@ ability to handle the encoding in
 L<Locale::Maketext(3)|Locale::Maketext/3>.  I implement this since
 this is what GNU gettext does.  When %Lexicon is read from MO files
 by C<read_mo()>, the encoding tagged in gettext MO files is used to
-C<decode> the text into perl's internal encoding.  Then, when
+C<decode> the text into the internal encoding of Perl.  Then, when
 extracted by C<maketext>, it is C<encode>d by the current
 C<encoding> value.  The C<encoding> can be set at run time, so
 that you can run a daemon and output to different encoding
@@ -699,7 +721,7 @@ You should trust the encoding of your gettext MO file.  GNU gettext
 C<msgfmt> checks the illegal characters for you when you compile your
 MO file from your PO file.  The encoding form your MO files are
 always good.  If you try to output to a wrong encoding, part of your
-text may be lost, as C<FB_DEFAULT> does.  If you don't like this
+text may be lost, as C<FB_DEFAULT> does.  If you do not like this
 C<FB_DEFAULT>, change the failure behavior with the method
 C<encode_failure>.
 
@@ -718,20 +740,20 @@ welcome.
 B<NOTICE:> I<MyPackage::L10N::en-E<gt>maketext(...) is not available
 anymore,> as the C<maketext> method is no more static.  That is a
 sure result, as %Lexicon is imported from foreign sources
-dynamically, but not statically hardcoded in perl sources.  But the
+dynamically, but not statically hardcoded in Perl sources.  But the
 documentation of L<Locale::Maketext(3)|Locale::Maketext/3> does not
 say that you can use it as a static method anyway.  Maybe you were
 practicing this before.  You had better check your existing code for
 this.  If you try to invoke it statically, it returns C<undef>.
 
 C<dgettext> and C<dcgettext> in GNU gettext are not implemented.
-It's not possible to temporarily change the current text domain in
-the current design of Locale::Maketext::Gettext.  Besides, it's
+It is not possible to temporarily change the current text domain in
+the current design of Locale::Maketext::Gettext.  Besides, it is
 meaningless.  Locale::Maketext is object-oriented.  You can always
 raise a new language handle for another text domain.  This is
 different from the situation of GNU gettext.  Also, the category
 is always C<LC_MESSAGES>.  Of course it is.  We are gettext and
-Maketext. ^_*'
+Maketext.
 
 Avoid creating different language handles with different
 textdomain on the same localization subclass.  This currently
@@ -750,11 +772,15 @@ a single textdomain for a single localization class.
 
 The C<key_encoding> is a workaround, not a solution.  There is no
 solution to this problem yet.  You should avoid using non-English
-language as your original text.  You'll get yourself into trouble if
-you mix several original text encodings, for example, joining
+language as your original text.  You will get yourself into trouble
+if you mix several original text encodings, for example, joining
 several pieces of code from programmers all around the world, with
 their messages written in their own language and encodings.  Solution
 suggestions are welcome.
+
+C<pgettext> in GNU gettext is implemented as C<pmaketext>, in order
+to look up the text message translation in a particular context.
+Thanks to the suggestion from Chris Travers.
 
 =head1 BUGS
 
@@ -764,7 +790,7 @@ The only reason that maketext may die unexpectedly now is
 currently.  Suggestions are welcome.
 
 You are welcome to fix my English.  I have done my best to this
-documentation, but I'm not a native English speaker after all. ^^;
+documentation, but I am not a native English speaker after all. ^^;
 
 =head1 SEE ALSO
 
@@ -781,7 +807,7 @@ imacat <imacat@mail.imacat.idv.tw>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003-2007 imacat. All rights reserved. This program is free
+Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 
