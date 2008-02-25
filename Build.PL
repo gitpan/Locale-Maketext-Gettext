@@ -4,7 +4,7 @@ use Module::Build;
 
 my $build = Module::Build->new(
     dist_name       => "Locale-Maketext-Gettext",
-    dist_version    => "1.23",
+    dist_version    => "1.24",
     dist_abstract   => "Joins gettext and Maketext frameworks",
     dist_author     => "imacat <imacat\@mail.imacat.idv.tw>",
     license         => "perl",
@@ -14,6 +14,11 @@ my $build = Module::Build->new(
     requires        => {
         "perl"          => "5.8.0",
     },
+    build_requires		=> {
+        "Module::Signature"	=> 0,
+        "Test::Pod"		=> 0,
+    },
+    add_to_cleanup	=> [ "t/test_native.po", "t/locale/en/LC_MESSAGES/test_native.mo" ],
 );
 
 $build->create_build_script;

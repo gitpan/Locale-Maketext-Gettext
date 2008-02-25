@@ -36,5 +36,4 @@ t/locale/zh_TW/LC_MESSAGES/test2.mo
 t/locale/zh_TW/LC_MESSAGES/test_be.mo
 t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
 t/T_L10N.pm
-t/test_native.po
 THANKS

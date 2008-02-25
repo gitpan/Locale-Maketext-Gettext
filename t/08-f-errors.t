@@ -273,6 +273,8 @@ foreach $dir (@Locale::Maketext::Gettext::Functions::SYSTEM_LOCALEDIRS) {
     @_ = glob "$dir/*/LC_MESSAGES/*.mo";
     @_ = grep /\/[^\/\.]+\/LC_MESSAGES\//, @_;
     next if scalar(@_) == 0;
+    # Take the newest to prevent lagacy MO files
+    @_ = sort { (stat $b)[9] <=> (stat $a)[9] } @_;
     $_ = $_[0];
     /^\Q$dir\E\/(.+?)\/LC_MESSAGES\/(.+?)\.mo$/;
     ($domain, $lang) = ($2, $1);
@@ -282,18 +284,17 @@ foreach $dir (@Locale::Maketext::Gettext::Functions::SYSTEM_LOCALEDIRS) {
     last;
 }
 $skip = defined $domain? 0: 1;
-if (!$skip) {
-    $r = eval {
-        use Locale::Maketext::Gettext::Functions;
-        textdomain($domain);
-        get_handle($lang);
-        $_ = maketext("");
-        # Skip if $Lexicon{""} does not exists
-        $skip = 1 if $_ eq "";
-        return 1;
-    };
-}
+$r = eval {
+    return if $skip;
+    use Locale::Maketext::Gettext::Functions;
+    textdomain($domain);
+    get_handle($lang);
+    $_ = maketext("");
+    # Skip if $Lexicon{""} does not exists
+    $skip = 1 if $_ eq "";
+    return 1;
+};
 # 38
-skip($skip, $r, 1);
+skip($skip, $r, 1, $@);
 # 39
 skip($skip, $_, qr/Project-Id-Version:/);

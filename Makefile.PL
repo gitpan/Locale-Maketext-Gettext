@@ -12,7 +12,7 @@ $eummver =~ s/_//;
 
 WriteMakefile(
     NAME        => "Locale-Maketext-Gettext",
-    VERSION     => "1.23",
+    VERSION     => "1.24",
     ABSTRACT    => "Joins gettext and Maketext frameworks",
     AUTHOR      => "imacat <imacat\@mail.imacat.idv.tw>",
     %license,
@@ -23,6 +23,9 @@ WriteMakefile(
     dist        => {
         COMPRESS    => "gzip -9",
         SUFFIX      => ".gz",
+    },
+    clean		=> {
+        FILES		=> "t/test_native.po t/locale/en/LC_MESSAGES/test_native.mo",
     },
 );
 
