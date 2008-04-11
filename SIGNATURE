@@ -15,25 +15,25 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 f044bfe71c57b6f25c659bc0a6067aa854bc8343 BUGS
-SHA1 5b4a767273d58f13c98b28160e8c06f08dfb0546 Build.PL
-SHA1 34d0b68a80be6f634bdddb2c8d697579562e17f6 Changes
+SHA1 20c8241f5aabf892615079564ca322dc85f622b1 Build.PL
+SHA1 267bb65e2c9ce8b2d1c45dcd4956ca94c0299bed Changes
 SHA1 02929b6e28b672c87ad1dd1d06ae7a78ec42bee0 MANIFEST
-SHA1 4c55f979fd77bb86f1f76220f8b4d4092a267b22 META.yml
-SHA1 4c174a10b92d00b5ee526cfaa7e4b13074051b1d Makefile.PL
+SHA1 623fd08fe7a855fcf66ed22db4cabb55a7e9d0a0 META.yml
+SHA1 02f4d3a88a18f4d3b5e1de0c72792c0446633f06 Makefile.PL
 SHA1 3d0d22ad8659da0274e541c760a45ac6e50aa99d README
 SHA1 3db402b52e04cf5a6e60291c23aac8c16f2db810 THANKS
 SHA1 f89afd70fdcbaeeab44fada7ed3087d5c7f6f018 bin/maketext
-SHA1 4a980dade8c9a3389eb28781d8f68108aff820b8 lib/Locale/Maketext/Gettext.pm
+SHA1 5c705656c9cf9c6bd8321da09244c88c9a3ced17 lib/Locale/Maketext/Gettext.pm
 SHA1 b88b6bad1e8cb0ba825594c233c006c1b297646f lib/Locale/Maketext/Gettext/Functions.pm
 SHA1 525f414c7a0aadc61240a4b0959ca2cda7514c75 t/00-signature.t
 SHA1 7bc2bf2d3ef2befd48a457fb3d90c7c7bdcc4854 t/01-basic.t
 SHA1 07c4c75a88ed99c667650593e91ea1c96ce88e41 t/02-big-endian.t
-SHA1 50ccae38bb7e6c11bea66263b51f2eba6584c792 t/03-errors.t
+SHA1 acf2dad455f0577641038351fead6bcd20ecbab1 t/03-errors.t
 SHA1 8a28c721b5eefe607c300192c8cb8e8107f419be t/04-encodings.t
 SHA1 c16af7bbe1d9bd7ce8644c19f968231b94156c12 t/05-switching.t
 SHA1 0212e5b50d6886601b0a4ad82d3c656975009a73 t/06-racing.t
 SHA1 2ddb628b67ae35033fad4331c5323928d7dd7395 t/07-f-basic.t
-SHA1 26b797eb292fd5783a056f8c51e043db367034b5 t/08-f-errors.t
+SHA1 a4491ef77b899c4988b8ab34fb8f945a8d06c285 t/08-f-errors.t
 SHA1 8fb7ecbce36daaf81ac9c197dab6834b25233cc5 t/09-f-encodings.t
 SHA1 2c1641cc6fff792fb83826486050acab23a1db51 t/10-f-switching.t
 SHA1 4afe4980e7ed4d326009b8257e01320abfb33d14 t/11-command-line.t
@@ -53,9 +53,9 @@ SHA1 bcc89cdc393507d51b5a76e40954db72914b60d8 t/locale/zh_TW/LC_MESSAGES/test2.m
 SHA1 20f810c6229d0bd4064b27f9b3d86b61a20f0821 t/locale/zh_TW/LC_MESSAGES/test_be.mo
 SHA1 eb13887b005e3c3e9fab774dfea22de5c01ad1ef t/locale/zh_TW/LC_MESSAGES/test_utf8.mo
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkfDFSEACgkQi9gubzC5S1y20ACaAyCH7DKh1laNCKs6RZsODmf0
-ofcAnjX5R65e40eAqJyAP3P6cFBymmoa
-=7Q8W
+iEYEARECAAYFAkf+ve8ACgkQi9gubzC5S1xr7gCgqGErgrRL3hVJjUVWSkexezM2
+/eMAmwWAJrntbtof/PLw2KygTezE/QoK
+=2Om+
 -----END PGP SIGNATURE-----

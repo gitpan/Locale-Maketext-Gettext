@@ -1,11 +1,11 @@
 --- #YAML:1.0
 name:                Locale-Maketext-Gettext
-version:             1.24
+version:             1.25
 abstract:            Joins gettext and Maketext frameworks
 license:             perl
 author:              
     - imacat <imacat@mail.imacat.idv.tw>
-generated_by:        ExtUtils::MakeMaker version 6.42
+generated_by:        ExtUtils::MakeMaker version 6.44
 distribution_type:   module
 requires:     
 meta-spec:

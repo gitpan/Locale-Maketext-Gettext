@@ -1,5 +1,10 @@
 Locale-Maketext-Gettext change log
 
+2008-04-11	version 1.25
+	Test suite fix.  No code changes.
+	 1. t/03-errors.t and t/08-f-errors.t: Added find_system_mo(), to
+	    select a system MO file that we can use.
+
 2008-02-26	version 1.24
 	Test and build suite fix.  No code changes.
 	 1. t/02-big-endian.t: Added creating PO at run time, in order

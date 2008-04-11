@@ -11,11 +11,72 @@ use Test;
 
 BEGIN { plan tests => 29 }
 
+use Encode qw();
 use FindBin;
-use File::Spec::Functions qw(catdir);
+use File::Basename qw(basename);
+use File::Spec::Functions qw(catdir catfile);
 use lib $FindBin::Bin;
-use vars qw($LOCALEDIR $r);
+use vars qw($THIS_FILE $LOCALEDIR $r);
+$THIS_FILE = basename($0);
 $LOCALEDIR = catdir($FindBin::Bin, "locale");
+sub find_system_mo();
+
+# find_system_mo: Find a safe system MO to be tested
+sub find_system_mo() {
+    local ($_, %_);
+    my %cands;
+    use Locale::Maketext::Gettext::Functions;
+    # Find all the system MO files
+    %cands = qw();
+    foreach my $dir (@Locale::Maketext::Gettext::Functions::SYSTEM_LOCALEDIRS) {
+        my ($DH, @locales);
+        next unless -d $dir;
+        
+        @locales = qw();
+        opendir $DH, $dir               or die "$THIS_FILE: $dir: $!";
+        while (defined($_ = readdir $DH)) {
+            my $dir1;
+            $dir1 = catfile($dir, $_, "LC_MESSAGES");
+            push @locales, $_ if -d $dir1 && -r $dir1
+                && /^(?:en|zh_tw|zh_cn)$/i;
+        }
+        closedir $DH                    or die "$THIS_FILE: $dir: $!";
+        
+        foreach my $loc (sort @locales) {
+            my $dir1;
+            $dir1 = catfile($dir, $loc, "LC_MESSAGES");
+            opendir $DH, $dir1          or die "$THIS_FILE: $dir1: $!";
+            while (defined($_ = readdir $DH)) {
+                my ($file, $domain);
+                $file = catfile($dir1, $_);
+                next unless -f $file && -r $file && /^(.+)\.mo$/;
+                $domain = $1;
+                $cands{$file} = [$loc, $domain];
+            }
+            closedir $DH                or die "$THIS_FILE: $dir1: $!";
+        }
+    }
+    # Check each MO file, from the newest
+    foreach my $file (sort { (stat $b)[9] <=> (stat $a)[9] } keys %cands) {
+        my ($FH, $size, $content, $charset, $lang, $domain);
+        $size = (stat $file)[7];
+        open $FH, $file                 or die "$THIS_FILE: $file: $!";
+        read $FH, $content, $size       or die "$THIS_FILE: $file: $!";
+        close $FH                       or die "$THIS_FILE: $file: $!";
+        next unless $content =~ /Project-Id-Version:/;
+        next unless $content =~ /\s+charset=([^\n]+)/;
+        $charset = $1;
+        next unless defined Encode::resolve_alias($charset);
+        # OK. We take this one
+        ($lang, $domain) = @{$cands{$file}};
+        $lang = lc $lang;
+        $lang =~ s/_/-/g;
+        $lang = "i-default" if $lang eq "c";
+        return ($lang, $domain);
+    }
+    # Not found
+    return (undef, undef);
+}
 
 # When something goes wrong
 use vars qw($dir $domain $lang $skip);
@@ -199,40 +260,18 @@ ok($r, 1);
 ok($_, "Hiya :)");
 
 # Search system locale directories
-use Locale::Maketext::Gettext;
-undef $domain;
-foreach $dir (@Locale::Maketext::Gettext::SYSTEM_LOCALEDIRS) {
-    next unless -d $dir;
-    # Only valid in the language range of T_L10N
-    if (scalar(@_) == 0) {
-        @_ = glob "$dir/zh_TW/LC_MESSAGES/*.mo";
-        @_ = grep /\/[^\/\.]+\/LC_MESSAGES\//, @_;
-    }
-    if (scalar(@_) == 0) {
-        @_ = glob "$dir/zh_CN/LC_MESSAGES/*.mo" if scalar(@_) == 0;
-        @_ = grep /\/[^\/\.]+\/LC_MESSAGES\//, @_;
-    }
-    next if scalar(@_) == 0;
-    $_ = $_[0];
-    /^\Q$dir\E\/(.+?)\/LC_MESSAGES\/(.+?)\.mo$/;
-    ($domain, $lang) = ($2, $1);
-    $lang = lc $lang;
-    $lang =~ s/_/-/g;
-    $lang = "i-default" if $lang eq "c";
-    last;
-}
+($lang, $domain) = find_system_mo;
 $skip = defined $domain? 0: 1;
-if (!$skip) {
-    $r = eval {
-        require T_L10N;
-        $_ = T_L10N->get_handle($lang);
-        $_->textdomain($domain);
-        $_ = $_->maketext("");
-        # Skip if $Lexicon{""} does not exists
-        $skip = 1 if $_ eq "";
-        return 1;
-    };
-}
+$r = eval {
+    return if $skip;
+    require T_L10N;
+    $_ = T_L10N->get_handle($lang);
+    $_->textdomain($domain);
+    $_ = $_->maketext("");
+    # Skip if $Lexicon{""} does not exists
+    $skip = 1 if $_ eq "";
+    return 1;
+};
 # 28
 skip($skip, $r, 1);
 # 29
