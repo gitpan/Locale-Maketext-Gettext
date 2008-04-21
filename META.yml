@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Locale-Maketext-Gettext
-version:             1.25
+version:             1.26
 abstract:            Joins gettext and Maketext frameworks
 license:             perl
 author:              

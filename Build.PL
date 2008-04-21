@@ -4,13 +4,13 @@ use Module::Build;
 
 my $build = Module::Build->new(
     dist_name       => "Locale-Maketext-Gettext",
-    dist_version    => "1.25",
+    dist_version    => "1.26",
     dist_abstract   => "Joins gettext and Maketext frameworks",
     dist_author     => "imacat <imacat\@mail.imacat.idv.tw>",
     license         => "perl",
     sign            => 1,
     
-    script_files    => [ "bin/maketext" ],
+    script_files    => [ "script/maketext" ],
     requires        => {
         "perl"          => "5.8.0",
     },

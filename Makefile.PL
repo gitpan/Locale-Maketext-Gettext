@@ -12,14 +12,14 @@ $eummver =~ s/_//;
 
 WriteMakefile(
     NAME        => "Locale-Maketext-Gettext",
-    VERSION     => "1.25",
+    VERSION     => "1.26",
     ABSTRACT    => "Joins gettext and Maketext frameworks",
     AUTHOR      => "imacat <imacat\@mail.imacat.idv.tw>",
     %license,
     PREREQ_PM   => { },
     SIGN        => 1,
     
-    EXE_FILES   => [ "bin/maketext" ],
+    EXE_FILES   => [ "script/maketext" ],
     dist        => {
         COMPRESS    => "gzip -9",
         SUFFIX      => ".gz",

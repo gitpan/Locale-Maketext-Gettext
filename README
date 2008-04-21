@@ -1,4 +1,4 @@
-* Locale::Maketext::Gettext
+Locale::Maketext::Gettext - Joins the gettext and Maketext frameworks
 
 Locale::Maketext::Gettext joins the GNU gettext and Maketext
 frameworks.  It is a subclass of Locale::Maketext that follows the
@@ -16,6 +16,7 @@ Then, build your Maketext localization class, with your base class
 changed from Locale::Maketext to Locale::Maketext::Gettext.  That's
 all. ^_*'
 
+
 * Locale::Maketext::Gettext::Functions
 
 Locale::Maketext::Gettext::Functions is a functional
@@ -23,6 +24,7 @@ interface to Locale::Maketext::Gettext (and Locale::Maketext).
 It works completely the GNU gettext way.  It plays magic to
 Locale::Maketext.  No more localization class/subclasses and language
 handles are required.
+
 
 * The maketext script
 
@@ -33,14 +35,17 @@ result.  It enables Maketext to be integrated into other programming
 languages/systems, like bash/csh, python, PHP, C, etc.  It works
 like the command-line program gettext.
 
+
 * Installation
 
-Locale::Maketext::Gettext uses the standard perl module install process:
+    Read INSTALL for instructions on how to install
+Locale::Maketext::Gettext.
 
-perl Makefile.PL
-make
-make test
-make install
+
+* News, Changes and Updates
+
+    Refer to the Changes for changes, bug fixes, updates, new functions, etc.
+
 
 * Copyright
 
