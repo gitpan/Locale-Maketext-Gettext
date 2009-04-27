@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test suite for the behavior when something goes wrong
-# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2009 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -63,7 +63,10 @@ sub find_system_mo() {
         open $FH, $file                 or die "$THIS_FILE: $file: $!";
         read $FH, $content, $size       or die "$THIS_FILE: $file: $!";
         close $FH                       or die "$THIS_FILE: $file: $!";
-        next unless $content =~ /Project-Id-Version:/;
+        # Only take files whose meta information does not have special characters
+        # that might be considered as code by Locale::Maketext
+        next unless $content =~ /Project-Id-Version:([^\n\0\[\]~]+\n)+\0/;
+        # Only take files that resolve to a valid character set
         next unless $content =~ /\s+charset=([^\n]+)/;
         $charset = $1;
         next unless defined Encode::resolve_alias($charset);
@@ -262,11 +265,13 @@ ok($_, "Hiya :)");
 # Search system locale directories
 ($lang, $domain) = find_system_mo;
 $skip = defined $domain? 0: 1;
+print "($lang, $domain)\n";
 $r = eval {
     return if $skip;
     require T_L10N;
     $_ = T_L10N->get_handle($lang);
     $_->textdomain($domain);
+    print "OK 1111\n";
     $_ = $_->maketext("");
     # Skip if $Lexicon{""} does not exists
     $skip = 1 if $_ eq "";

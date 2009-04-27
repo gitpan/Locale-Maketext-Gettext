@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 # Test the big endian MO files
-# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2009 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 
@@ -65,16 +65,17 @@ ok($_, "´ó¼ÒºÃ¡£");
 {
 my $FH;
 $skip = 1;
+$POfile = catfile($FindBin::Bin, "test_native.po");
+$MOfile = catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_native.mo");
 $_ = join "", `msgfmt --version 2>&1`;
 last unless $? == 0;
 last unless /GNU gettext/;
 last unless /GNU gettext.* (\d+)\.(\d+)/;
 # Gettext from 0.15 has msgctxt
 $hasctxt = $1 > 0 || ($1 == 0 && $2 >= 15);
-$POfile = catfile($FindBin::Bin, "test_native.po");
 $_ = << "EOT";
 # English PO file for the test_native project.
-# Copyright (C) 2003-2008 imacat
+# Copyright (C) 2003-2009 imacat
 # This file is distributed under the same license as the commonlib package.
 # imacat <imacat\@mail.imacat.idv.tw>, 2003-%1\$04d.
 # 
@@ -114,7 +115,6 @@ $_ = sprintf $_, @_[5,4,3,2,1,0];
 open $FH, ">$POfile";
 print $FH $_;
 close $FH;
-$MOfile = catfile($LOCALEDIR, "en", "LC_MESSAGES", "test_native.mo");
 `msgfmt -o "$MOfile" "$POfile"`;
 last unless $? == 0;
 $skip = 0;

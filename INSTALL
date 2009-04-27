@@ -27,7 +27,7 @@ http://www.activestate.com/
 
    2. Required Perl modules: None.
 
-   3. Optional Perl modules: none
+   3. Optional Perl modules: None.
 
 
 * Installation Instruction
@@ -141,6 +141,6 @@ commands (by running perldoc cpanp).
 
 
 imacat
-2008-04-21
+2008-11-11
 imacat@mail.imacat.idv.tw
 http://www.imacat.idv.tw/

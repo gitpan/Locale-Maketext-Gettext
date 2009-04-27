@@ -1,5 +1,19 @@
 Locale-Maketext-Gettext change log
 
+2009-04-28	version 1.27
+	 Test suite fix.  No code changes.
+	 1. t/03-errors.t: Fixed the find_system_mo() subroutine to
+	    exclude MO files with special characters that might be
+	    considered as code by Locale::Maketext.
+	 2. t/02-big-endian.t: Fixed the native-built MO file test
+	    and moved the $POfile and $MOfile file name assignment
+	    to the beginning, to ensure that their values are
+	    assigned even if GNU gettext is not installed and
+	    the test is skipped on the target test system.
+
+2008-11-11
+	 1. INSTALL: Fixed the grammer, changed "none" to "None.".
+
 2008-04-22	version 1.26
 	Documentation fix.  No code changes.
 	 1. bin/maketext: Moved to script/maketext.
@@ -8,7 +22,7 @@ Locale-Maketext-Gettext change log
 	 1. TODO: Added.
 	 2. Artistic and COPYING: Added.
 	 3. INSTALL: Added.  Installation instructions moved from README
-	    to INSTALL
+	    to INSTALL.
 
 2008-04-11	version 1.25
 	Test suite fix.  No code changes.

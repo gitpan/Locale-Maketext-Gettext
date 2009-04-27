@@ -1,6 +1,6 @@
 # Locale::Maketext::Gettext - Joins the gettext and Maketext frameworks
 
-# Copyright (c) 2003-2008 imacat. All rights reserved. This program is free
+# Copyright (c) 2003-2009 imacat. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 # First written: 2003-04-23
@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use base qw(Locale::Maketext Exporter);
 use vars qw($VERSION @ISA %Lexicon @EXPORT @EXPORT_OK);
-$VERSION = 1.26;
+$VERSION = 1.27;
 @EXPORT = qw(read_mo);
 @EXPORT_OK = @EXPORT;
 # Prototype declaration
