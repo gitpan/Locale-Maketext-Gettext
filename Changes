@@ -1,5 +1,14 @@
 Locale-Maketext-Gettext change log
 
+2009-06-27	version 1.28
+	 Build script fix.  No code changes.
+	 1. Build.PL: Removed the build_requires, as they are not
+	    required by the build process, but by the test process.
+	    The build process should not be blocked by them.
+	    Suggested by Ryan Niebur <ryanryan52@gmail.com> and
+	    Adam Kennedy <adamkennedybackup@gmail.com>
+	    (and Audrey Tang).
+
 2009-04-28	version 1.27
 	 Test suite fix.  No code changes.
 	 1. t/03-errors.t: Fixed the find_system_mo() subroutine to
